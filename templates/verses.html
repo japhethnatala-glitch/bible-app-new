@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}All Verses ({{ translation }}) | Bible App{% endblock %}
+
+{% block content %}
+<h1>All Verses - {{ translation }}</h1>
+<div>
+    {% for verse in verses %}
+        {{ verse|safe }}
+    {% endfor %}
+</div>
+
+<p>
+    Switch translation:
+    <a href="{{ url_for('verses', translation='KJV') }}">KJV</a> |
+    <a href="{{ url_for('verses', translation='WEB') }}">WEB</a>
+</p>
+{% endblock %}

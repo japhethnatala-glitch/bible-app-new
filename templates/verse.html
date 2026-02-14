@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Verse ({{ translation }}) | Bible App{% endblock %}
+
+{% block content %}
+<h1>Daily Verse - {{ translation }}</h1>
+<p class="daily-verse">{{ verse }}</p>
+
+<p>
+    Switch translation:
+    <a href="{{ url_for('verse', translation='KJV') }}">KJV</a> |
+    <a href="{{ url_for('verse', translation='WEB') }}">WEB</a>
+</p>
+{% endblock %}

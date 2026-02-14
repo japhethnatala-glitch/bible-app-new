@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Home | Bible App{% endblock %}
+
+{% block content %}
+<h1>Welcome to the Bible App</h1>
+<p>Select a translation and explore verses:</p>
+<ul>
+    <li><a href="{{ url_for('verse', translation='KJV') }}">Daily Verse (KJV)</a></li>
+    <li><a href="{{ url_for('verse', translation='WEB') }}">Daily Verse (WEB)</a></li>
+    <li><a href="{{ url_for('search', translation='KJV') }}">Search (KJV)</a></li>
+    <li><a href="{{ url_for('search', translation='WEB') }}">Search (WEB)</a></li>
+    <li><a href="{{ url_for('verses', translation='KJV') }}">All Verses (KJV)</a></li>
+    <li><a href="{{ url_for('verses', translation='WEB') }}">All Verses (WEB)</a></li>
+</ul>
+{% endblock %}
