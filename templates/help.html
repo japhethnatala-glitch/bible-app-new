@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Help & Features | Bible App{% endblock %}
+
+{% block content %}
+<h1>Help & Features</h1>
+<p>This page provides a quick guide to using the Bible App effectively.</p>
+
+<h2>Getting Started</h2>
+<ul>
+  <li>Use the <strong>Home</strong> page to access daily verses and navigation links.</li>
+  <li>Choose your preferred translation (KJV or WEB) from the menu or links.</li>
+  <li>Explore highlighted daily verses for inspiration.</li>
+</ul>
+
+<h2>Searching</h2>
+<ul>
+  <li>Go to the <strong>Search</strong> page to find verses by keyword.</li>
+  <li>Use the <strong>Search by Book</strong> page to browse verses from a specific book.</li>
+  <li>Each search earns you credits, which unlock extra features.</li>
+</ul>
+
+<h2>Credits System</h2>
+<ul>
+  <li>Credits are earned by performing searches.</li>
+  <li>They are tracked by your email if you provide one.</li>
+  <li>Credits are virtual points — not real money — and cannot be withdrawn.</li>
+</ul>
+
+<h2>Offline Mode</h2>
+<ul>
+  <li>If you lose internet connection, the app shows an <strong>Offline</strong> page.</li>
+  <li>You can still read cached verses and pages offline.</li>
+  <liNew searches require internet access.</li>
+</ul>
+
+<h2>Support</h2>
+<p>If you need further assistance, please visit our <a href="{{ url_for('faq') }}">FAQ page</a> or <a href="{{ url_for('contact') }}">Contact page</a>.</p>
+{% endblock %}

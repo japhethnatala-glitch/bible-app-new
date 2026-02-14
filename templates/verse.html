@@ -1,14 +1,18 @@
 {% extends "base.html" %}
 
-{% block title %}Daily Verse ({{ translation }}) | Bible App{% endblock %}
+{% block title %}Daily Verse | Bible App{% endblock %}
 
 {% block content %}
-<h1>Daily Verse - {{ translation }}</h1>
-<p class="daily-verse">{{ verse }}</p>
+<h1>Daily Verse ({{ translation }})</h1>
 
-<p>
-    Switch translation:
-    <a href="{{ url_for('verse', translation='KJV') }}">KJV</a> |
-    <a href="{{ url_for('verse', translation='WEB') }}">WEB</a>
+<!-- ✅ Highlighted verse using your .daily-verse style -->
+<div class="daily-verse">
+  {{ verse|safe }}
+</div>
+
+<p class="mt-3">
+  <a href="{{ url_for('verses', translation=translation) }}" class="btn btn-primary">
+    View All Verses ({{ translation }})
+  </a>
 </p>
 {% endblock %}

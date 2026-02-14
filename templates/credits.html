@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Credits | Bible App{% endblock %}
+
+{% block content %}
+<h1>Credits</h1>
+<p>The Bible App uses a simple credits system to reward your engagement.</p>
+
+<h2>How Credits Work</h2>
+<ul>
+  <li>You earn credits each time you perform a search.</li>
+  <li>Credits can unlock additional features in the app.</li>
+  <li>Credits are virtual points — they are not real money and cannot be withdrawn or transferred.</li>
+</ul>
+
+<h2>Your Balance</h2>
+{% if credits is not none %}
+  <p>You currently have <strong>{{ credits }}</strong> credits.</p>
+{% else %}
+  <p>Enter your email during searches to track your credits.</p>
+{% endif %}
+
+<h2>Why Credits?</h2>
+<p>Credits encourage regular study and exploration of scripture. They also help us personalize your experience in the app.</p>
+{% endblock %}

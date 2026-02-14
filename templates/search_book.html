@@ -1,24 +1,30 @@
 {% extends "base.html" %}
 
-{% block title %}Search Book ({{ translation }}) | Bible App{% endblock %}
+{% block title %}Search by Book ({{ translation }}) | Bible App{% endblock %}
 
 {% block content %}
-<h1>Search Book - {{ translation }}</h1>
+<h1>Search by Book ({{ translation }})</h1>
+<p>Enter a book name to find verses:</p>
 
-<form method="post" class="mb-3">
-    <label for="bookname" class="form-label">Select a Book:</label>
-    <select name="bookname" id="bookname" class="form-select">
-        <option value="Genesis">Genesis</option>
-        <option value="Exodus">Exodus</option>
-        <option value="Leviticus">Leviticus</option>
-        <!-- continue with all 66 books -->
-    </select>
-    <button type="submit" class="btn btn-primary mt-2">Search</button>
+<!-- ✅ Search form -->
+<form method="POST">
+  <label for="bookname">Book Name</label>
+  <input type="text" id="bookname" name="bookname" placeholder="e.g. Genesis, Psalms, John">
+
+  <button type="submit">Search</button>
 </form>
 
-<div>
-    {% for verse in results %}
-        {{ verse|safe }}
+<!-- ✅ Results list -->
+{% if results %}
+  <h2>Results</h2>
+  <ul>
+    {% for r in results %}
+      <li>{{ r|safe }}</li>
     {% endfor %}
-</div>
+  </ul>
+{% else %}
+  {% if request.method == 'POST' %}
+    <p>No verses found for that book.</p>
+  {% endif %}
+{% endif %}
 {% endblock %}

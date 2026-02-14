@@ -4,15 +4,18 @@
 
 {% block content %}
 <h1>All Verses - {{ translation }}</h1>
-<div>
-    {% for verse in verses %}
-        {{ verse|safe }}
-    {% endfor %}
-</div>
 
-<p>
-    Switch translation:
-    <a href="{{ url_for('verses', translation='KJV') }}">KJV</a> |
-    <a href="{{ url_for('verses', translation='WEB') }}">WEB</a>
+<!-- ✅ Verse list styled with your CSS -->
+<ul>
+  {% for verse in verses %}
+    <li>{{ verse|safe }}</li>
+  {% endfor %}
+</ul>
+
+<!-- ✅ Switch translation links -->
+<p class="mt-3">
+  Switch translation:
+  <a href="{{ url_for('verses', translation='KJV') }}">KJV</a> |
+  <a href="{{ url_for('verses', translation='WEB') }}">WEB</a>
 </p>
 {% endblock %}

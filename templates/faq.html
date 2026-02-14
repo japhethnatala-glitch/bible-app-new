@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}FAQ | Bible App{% endblock %}
+
+{% block content %}
+<h1>Frequently Asked Questions</h1>
+
+<h2>How do I earn credits?</h2>
+<p>You earn credits each time you perform a search. Credits are tracked by your email if you provide one.</p>
+
+<h2>What can credits be used for?</h2>
+<p>Credits unlock additional features in the app, such as extended searches or personalized verse recommendations. They are virtual points and cannot be withdrawn or transferred.</p>
+
+<h2>Can I use the app offline?</h2>
+<p>Yes! The app caches verses and pages so you can still read them when offline. However, new searches require an internet connection.</p>
+
+<h2>Which translations are available?</h2>
+<p>Currently, the app supports King James Version (KJV) and World English Bible (WEB). More translations may be added in the future.</p>
+
+<h2>Why are there ads?</h2>
+<p>Ads help support the app’s development and maintenance. They are managed by Google AdSense and do not affect your credits.</p>
+
+<h2>How do I contact support?</h2>
+<p>You can reach us through the <a href="{{ url_for('contact') }}">Contact page</a>.</p>
+{% endblock %}

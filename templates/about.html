@@ -1,9 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}About - Bible App{% endblock %}
+{% block title %}About | Bible App{% endblock %}
 
 {% block content %}
-<h1>About This App</h1>
-<p>This Bible app is being built with Flask. Soon it will let you search verses, read chapters, and take notes.</p>
-{% endblock %}
+<h1>About the Bible App</h1>
+<p>The Bible App is designed to make scripture accessible, easy to explore, and available even when you’re offline.</p>
 
+<h2>Features</h2>
+<ul>
+  <li>Read daily verses highlighted for inspiration.</li>
+  <li>Browse complete chapters and books in multiple translations (KJV, WEB).</li>
+  <li>Search by keyword or book name to quickly find passages.</li>
+  <li>Earn credits for searches, unlocking additional features.</li>
+  <li>Offline support — cached verses remain available without internet.</li>
+</ul>
+
+<h2>Our Mission</h2>
+<p>We aim to provide a simple, user-friendly way to engage with the Bible, whether for personal study, devotion, or sharing with others.</p>
+
+<h2>Contact</h2>
+<p>If you’d like to reach out, please visit our <a href="{{ url_for('contact') }}">Contact page</a>.</p>
+{% endblock %}
