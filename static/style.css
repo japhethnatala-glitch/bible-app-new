@@ -1,9 +1,18 @@
+/* Light mode (default) */
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
     background-color: #f9f9f9;
+    color: #000000;
 }
 
+/* Dark mode */
+body.dark-mode {
+    background-color: #121212;
+    color: #f5f5f5;
+}
+
+/* Navbar */
 nav {
     margin-top: 20px;
 }
@@ -18,10 +27,15 @@ nav a {
 nav a:hover {
     color: #0056b3;
 }
+
 /* Headings */
 h1 {
     color: #333;
     margin-bottom: 15px;
+}
+
+body.dark-mode h1 {
+    color: #f5f5f5;
 }
 
 /* Paragraph spacing */
@@ -43,6 +57,11 @@ li {
     border-radius: 4px;
 }
 
+body.dark-mode li {
+    background: #1e1e1e;
+    border: 1px solid #444;
+}
+
 /* Daily verse highlight */
 .daily-verse {
     background: #e9f5ff;
@@ -51,26 +70,12 @@ li {
     margin: 15px 0;
     font-style: italic;
 }
-how do i upadate templates to use styling
-form {
-    background: #fff;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    max-width: 400px;
+
+body.dark-mode .daily-verse {
+    background: #2a2a2a;
+    border-left: 5px solid #66b2ff;
 }
 
-label {
-    font-weight: bold;
-    color: #333;
-}
-
-textarea {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
 /* Contact form container */
 form {
     background: #fff;
@@ -81,12 +86,21 @@ form {
     margin-top: 20px;
 }
 
+body.dark-mode form {
+    background: #1e1e1e;
+    border: 1px solid #444;
+}
+
 /* Labels */
 label {
     font-weight: bold;
     color: #333;
     display: block;
     margin-bottom: 5px;
+}
+
+body.dark-mode label {
+    color: #f5f5f5;
 }
 
 /* Inputs */
@@ -99,6 +113,14 @@ textarea {
     border: 1px solid #ccc;
     border-radius: 4px;
     font-family: Arial, sans-serif;
+}
+
+body.dark-mode input[type="text"],
+body.dark-mode input[type="email"],
+body.dark-mode textarea {
+    background: #2a2a2a;
+    border: 1px solid #555;
+    color: #f5f5f5;
 }
 
 /* Textarea */
@@ -136,20 +158,9 @@ button:hover {
     margin-bottom: 8px;
     border-radius: 4px;
 }
-h1 {
-    color: #333;
-    margin-bottom: 15px;
-}
 
-ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-li {
-    background: #fff;
-    border: 1px solid #ddd;
-    padding: 8px;
-    margin-bottom: 5px;
-    border-radius: 4px;
+body.dark-mode .flashes li {
+    background: #1e402f;
+    color: #a8e6a1;
+    border: 1px solid #3c6e57;
 }
