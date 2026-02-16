@@ -16,9 +16,6 @@
 </head>
 <body class="container mt-4">
 
-  <!-- BidVertiser verification code -->
-  <!-- Bidvertiser2103741 -->
-
   <!-- Navbar -->
   <nav>
     <a href="{{ url_for('home') }}">Home</a>
@@ -26,6 +23,8 @@
     <a href="{{ url_for('contact') }}">Contact</a>
     <a href="{{ url_for('verse', translation='KJV') }}">Verse (KJV)</a>
     <a href="{{ url_for('verse', translation='WEB') }}">Verse (WEB)</a>
+    <!-- Dark Mode Toggle -->
+    <button id="darkModeToggle" class="btn btn-sm btn-secondary">🌙 Dark Mode</button>
   </nav>
 
   <!-- ⭐ Adsterra Ad -->
@@ -56,6 +55,24 @@
     var infolinks_wsid = 0;
   </script>
   <script type="text/javascript" src="//resources.infolinks.com/js/infolinks_main.js"></script>
+
+  <!-- Dark Mode Script -->
+  <script>
+    const toggle = document.getElementById('darkModeToggle');
+    toggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      if (document.body.classList.contains('dark-mode')) {
+        localStorage.setItem('theme', 'dark');
+      } else {
+        localStorage.setItem('theme', 'light');
+      }
+    });
+
+    // Load saved preference on every page
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark-mode');
+    }
+  </script>
 
 </body>
 </html>
