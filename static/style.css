@@ -28,6 +28,14 @@ nav a:hover {
     color: #0056b3;
 }
 
+body.dark-mode nav a {
+    color: #66b2ff;
+}
+
+body.dark-mode nav a:hover {
+    color: #99ccff;
+}
+
 /* Headings */
 h1 {
     color: #333;
@@ -143,6 +151,15 @@ button:hover {
     background-color: #0056b3;
 }
 
+body.dark-mode button {
+    background-color: #444;
+    color: #f5f5f5;
+}
+
+body.dark-mode button:hover {
+    background-color: #666;
+}
+
 /* Flash messages (success feedback) */
 .flashes {
     list-style-type: none;
@@ -163,4 +180,14 @@ body.dark-mode .flashes li {
     background: #1e402f;
     color: #a8e6a1;
     border: 1px solid #3c6e57;
+}
+
+/* Footer */
+footer {
+    margin-top: 20px;
+    color: #333;
+}
+
+body.dark-mode footer {
+    color: #ccc;
 }
