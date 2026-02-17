@@ -9,8 +9,8 @@ body {
 
 /* Dark mode */
 body.dark-mode {
-    background-color: #121212;
-    color: #f5f5f5;
+    background-color: #121212 !important;
+    color: #f5f5f5 !important;
 }
 
 /* Navbar */
@@ -30,11 +30,11 @@ nav a:hover {
 }
 
 body.dark-mode nav a {
-    color: #66b2ff;
+    color: #66b2ff !important;
 }
 
 body.dark-mode nav a:hover {
-    color: #99ccff;
+    color: #99ccff !important;
 }
 
 /* Headings */
@@ -44,7 +44,7 @@ h1 {
 }
 
 body.dark-mode h1 {
-    color: #f5f5f5;
+    color: #f5f5f5 !important;
 }
 
 /* Paragraph spacing */
