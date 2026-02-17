@@ -4,53 +4,57 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- App manifest + theme -->
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="#4a90e2">
+
   <!-- Stylesheets -->
-  <!-- ✅ Corrected link: file is directly in static/ -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <title>{% block title %}Bible App{% endblock %}</title>
 </head>
 <body class="container mt-4">
 
-  <!-- Navbar -->
-  <nav>
-    <a href="/">Home</a>
-    <a href="/about">About</a>
-    <a href="/contact">Contact</a>
-    <a href="/verse/KJV">Verse (KJV)</a>
-    <a href="/verse/WEB">Verse (WEB)</a>
-    <!-- Dark Mode Toggle -->
-    <button id="darkModeToggle" class="btn btn-sm btn-secondary">🌙 Dark Mode</button>
+  <!-- ✅ Navbar -->
+  <nav class="mb-3">
+    <a href="{{ url_for('home') }}">Home</a> |
+    <a href="{{ url_for('about') }}">About</a> |
+    <a href="{{ url_for('contact') }}">Contact</a> |
+    <a href="{{ url_for('verse', translation='KJV') }}">Verse (KJV)</a> |
+    <a href="{{ url_for('verse', translation='WEB') }}">Verse (WEB)</a>
+    <!-- Dark mode toggle -->
+    <button id="darkModeToggle" class="btn btn-sm btn-secondary ms-2">🌙</button>
   </nav>
 
-  <!-- Page content -->
+  <!-- ✅ Page content -->
   {% block content %}{% endblock %}
 
-  <!-- Footer -->
+  <!-- ✅ Footer -->
   <footer class="mt-4 text-center">
     <p>
-      <a href="/terms">Terms of Use</a> |
-      <a href="/privacy">Privacy Policy</a>
+      <a href="{{ url_for('terms') }}">Terms of Use</a> |
+      <a href="{{ url_for('privacy') }}">Privacy Policy</a>
     </p>
   </footer>
 
-  <!-- Dark Mode Script -->
+  <!-- ✅ Dark mode script -->
   <script>
     const toggle = document.getElementById('darkModeToggle');
     toggle.addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');
-      if (document.body.classList.contains('dark-mode')) {
-        localStorage.setItem('theme', 'dark');
-      } else {
-        localStorage.setItem('theme', 'light');
-      }
     });
-
-    // Load saved preference
-    if (localStorage.getItem('theme') === 'dark') {
-      document.body.classList.add('dark-mode');
-    }
   </script>
+
+  <!-- ✅ Infolinks script -->
+  <script type="text/javascript">
+    var infolinks_pid = 3443532;   <!-- replace with your publisher ID -->
+    var infolinks_wsid = 0;
+  </script>
+  <script type="text/javascript" src="//resources.infolinks.com/js/infolinks_main.js"></script>
+
+  <!-- ✅ Adsterra script -->
+  <script async src="https://pl28716692.effectivegatecpm.com/33/b8/2a/33b82ac6188a5f121565f77208f03f96.js"></script>
+
 </body>
 </html>
