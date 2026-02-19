@@ -6,9 +6,9 @@
 <h1>All Verses - {{ translation }}</h1>
 
 <!-- ✅ Search bar -->
-<input type="text" id="verseSearch" placeholder="Search by book name..." class="form-control mb-3">
+<input type="text" id="verseSearch" placeholder="Search by book, chapter, or verse..." class="form-control mb-3">
 
-<!-- ✅ Verse list styled with your CSS -->
+<!-- ✅ Verse list -->
 <ul id="versesList">
   {% for verse in verses %}
     <li>{{ verse|safe }}</li>
@@ -25,10 +25,14 @@
 <!-- ✅ Script to filter verses -->
 <script>
   document.getElementById('verseSearch').addEventListener('keyup', function() {
-    var filter = this.value.toLowerCase();
+    var filter = this.value.toLowerCase().trim();
     var verses = document.querySelectorAll('#versesList li');
+
     verses.forEach(function(verse) {
-      if (verse.innerText.toLowerCase().includes(filter)) {
+      var text = verse.innerText.toLowerCase();
+
+      // ✅ Match book, chapter, and verse
+      if (text.includes(filter)) {
         verse.style.display = '';
       } else {
         verse.style.display = 'none';
