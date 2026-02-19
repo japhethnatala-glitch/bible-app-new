@@ -133,7 +133,7 @@
       document.body.style.backgroundColor = savedBg;
     }
 
-    // Automatic cycling every 5 seconds (paused in dark mode)
+    // Automatic cycling every 15 seconds (paused in dark mode)
     function changeBackground() {
       if (!document.body.classList.contains('dark-mode')) {
         document.body.style.backgroundColor = colors[index];
@@ -141,7 +141,7 @@
         index = (index + 1) % colors.length;
       }
     }
-    setInterval(changeBackground, 5000);
+    setInterval(changeBackground, 15000);
 
     // Manual button control
     const bgColors = ["#ffffff", "#f0f8ff", "#ffe4e1", "#e6ffe6", "#fffacd", "#e0ffff"];
@@ -175,7 +175,7 @@
     });
   </script>
 
-  <!-- ✅ Live Clock Script -->
+  <!-- ✅ Live Clock Script with AM/PM -->
   <script>
     function updateClock() {
       const now = new Date();
@@ -184,11 +184,12 @@
         year: 'numeric',
         month: 'short',
         day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: true   // ✅ forces 12-hour format with AM/PM
       };
-      document.getElementById('clock').textContent = now.toLocaleString('en-GB', options);
+      document.getElementById('clock').textContent = now.toLocaleString('en-US', options);
     }
     setInterval(updateClock, 1000);
     updateClock(); // run immediately
