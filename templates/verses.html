@@ -5,8 +5,11 @@
 {% block content %}
 <h1>All Verses - {{ translation }}</h1>
 
+<!-- ✅ Search bar -->
+<input type="text" id="verseSearch" placeholder="Search by book name..." class="form-control mb-3">
+
 <!-- ✅ Verse list styled with your CSS -->
-<ul>
+<ul id="versesList">
   {% for verse in verses %}
     <li>{{ verse|safe }}</li>
   {% endfor %}
@@ -18,4 +21,19 @@
   <a href="{{ url_for('verses', translation='KJV') }}">KJV</a> |
   <a href="{{ url_for('verses', translation='WEB') }}">WEB</a>
 </p>
+
+<!-- ✅ Script to filter verses -->
+<script>
+  document.getElementById('verseSearch').addEventListener('keyup', function() {
+    var filter = this.value.toLowerCase();
+    var verses = document.querySelectorAll('#versesList li');
+    verses.forEach(function(verse) {
+      if (verse.innerText.toLowerCase().includes(filter)) {
+        verse.style.display = '';
+      } else {
+        verse.style.display = 'none';
+      }
+    });
+  });
+</script>
 {% endblock %}
