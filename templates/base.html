@@ -26,10 +26,9 @@
     .goog-te-menu2-item {
       font-size: 14px !important;
     }
-    /* Optional dark mode background */
     .dark-mode {
-      background-color: #121212;
-      color: #f5f5f5;
+      background-color: #121212 !important;
+      color: #f5f5f5 !important;
     }
   </style>
 </head>
@@ -43,6 +42,7 @@
     <a href="{{ url_for('verse', translation='KJV') }}">Verse (KJV)</a> |
     <a href="{{ url_for('verse', translation='WEB') }}">Verse (WEB)</a>
     <button id="darkModeToggle" class="btn btn-sm btn-secondary ms-2">🌙</button>
+    <button id="colorToggle" class="btn btn-sm btn-info ms-2">🎨</button>
     
     <div class="ms-3 d-inline-block">
       <label class="fw-bold">🌐 Change Language:</label>
@@ -82,18 +82,30 @@
   </script>
   <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-  <!-- ✅ Background color cycling script -->
+  <!-- ✅ Background color scripts -->
   <script>
     const colors = ["#f0f8ff", "#ffe4e1", "#e6ffe6", "#fffacd", "#e0ffff", "#f5f5dc"];
     let index = 0;
 
+    // Automatic cycling every 5 seconds (paused in dark mode)
     function changeBackground() {
-      document.body.style.backgroundColor = colors[index];
-      index = (index + 1) % colors.length;
+      if (!document.body.classList.contains('dark-mode')) {
+        document.body.style.backgroundColor = colors[index];
+        index = (index + 1) % colors.length;
+      }
     }
-
-    // Change every 5 seconds
     setInterval(changeBackground, 5000);
+
+    // Manual button control
+    const bgColors = ["#ffffff", "#f0f8ff", "#ffe4e1", "#e6ffe6", "#fffacd", "#e0ffff"];
+    let bgIndex = 0;
+
+    document.getElementById('colorToggle').addEventListener('click', () => {
+      if (!document.body.classList.contains('dark-mode')) {
+        bgIndex = (bgIndex + 1) % bgColors.length;
+        document.body.style.backgroundColor = bgColors[bgIndex];
+      }
+    });
   </script>
 
 </body>
