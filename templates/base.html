@@ -30,6 +30,10 @@
       background-color: #121212 !important;
       color: #f5f5f5 !important;
     }
+    /* Smooth fade-in for ad reappearance */
+    #adContainer {
+      transition: opacity 1s ease-in-out;
+    }
   </style>
 </head>
 <body class="container mt-4">
@@ -61,6 +65,21 @@
       <a href="{{ url_for('terms') }}">Terms of Use</a> |
       <a href="{{ url_for('privacy') }}">Privacy Policy</a>
     </p>
+
+    <!-- ✅ Responsive AADS Ad Unit with Close Button -->
+    <div id="adContainer" class="mt-3" style="position: relative; max-width: 100%; text-align: center;">
+      <!-- Close button -->
+      <button id="closeAd" 
+              style="position: absolute; top: -10px; right: -10px; background: #f44336; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;">
+        ✕
+      </button>
+
+      <!-- AADS Ad iframe -->
+      <iframe data-aa='2427594' 
+              src='//acceptable.a-ads.com/2427594/?size=Adaptive'
+              style='border:0; padding:0; width:100%; max-width:320px; height:250px; overflow:hidden; display:block; margin:auto;'>
+      </iframe>
+    </div>
   </footer>
 
   <!-- Dark mode script with persistence -->
@@ -93,15 +112,22 @@
   </script>
   <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-  <!-- ✅ Background color scripts -->
+  <!-- ✅ Background color scripts with persistence -->
   <script>
     const colors = ["#f0f8ff", "#ffe4e1", "#e6ffe6", "#fffacd", "#e0ffff", "#f5f5dc"];
     let index = 0;
+
+    // Load saved background preference
+    const savedBg = localStorage.getItem('backgroundColor');
+    if (savedBg && !document.body.classList.contains('dark-mode')) {
+      document.body.style.backgroundColor = savedBg;
+    }
 
     // Automatic cycling every 5 seconds (paused in dark mode)
     function changeBackground() {
       if (!document.body.classList.contains('dark-mode')) {
         document.body.style.backgroundColor = colors[index];
+        localStorage.setItem('backgroundColor', colors[index]); // save preference
         index = (index + 1) % colors.length;
       }
     }
@@ -115,7 +141,27 @@
       if (!document.body.classList.contains('dark-mode')) {
         bgIndex = (bgIndex + 1) % bgColors.length;
         document.body.style.backgroundColor = bgColors[bgIndex];
+        localStorage.setItem('backgroundColor', bgColors[bgIndex]); // save preference
       }
+    });
+  </script>
+
+  <!-- ✅ Ad close + reappear script -->
+  <script>
+    const adContainer = document.getElementById('adContainer');
+    const closeBtn = document.getElementById('closeAd');
+
+    closeBtn.addEventListener('click', () => {
+      adContainer.style.opacity = '0';
+      setTimeout(() => {
+        adContainer.style.display = 'none';
+      }, 1000); // fade out
+
+      // Reappear after 3 minutes (180000 ms)
+      setTimeout(() => {
+        adContainer.style.display = 'block';
+        adContainer.style.opacity = '1'; // fade in
+      }, 180000);
     });
   </script>
 
