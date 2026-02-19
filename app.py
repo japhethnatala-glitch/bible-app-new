@@ -17,6 +17,23 @@ else:
     app.config.from_object("config.DevelopmentConfig")
 
 # ---------------------------
+# Permanent caching for static files
+# ---------------------------
+@app.after_request
+def add_header(response):
+    """
+    Add headers to cache static files permanently (1 year).
+    Dynamic routes remain uncached.
+    """
+    # Only apply to static files (CSS, JS, images, fonts)
+    if "text/css" in response.headers.get("Content-Type", "") \
+       or "application/javascript" in response.headers.get("Content-Type", "") \
+       or "image" in response.headers.get("Content-Type", "") \
+       or "font" in response.headers.get("Content-Type", ""):
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    return response
+
+# ---------------------------
 # Database connection + helpers
 # ---------------------------
 
