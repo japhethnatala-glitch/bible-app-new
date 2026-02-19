@@ -24,30 +24,23 @@
     .goog-te-menu2-item {
       font-size: 14px !important;     /* Cleaner text */
     }
-    /* ✅ Add search box styling */
-    #languageSearch {
-      width: 250px;
-      margin-bottom: 5px;
-      padding: 5px;
-    }
   </style>
 </head>
 <body class="container mt-4">
 
   <!-- ✅ Navbar -->
   <nav class="mb-3">
-    <a href="/">Home</a> |
-    <a href="/about">About</a> |
-    <a href="/contact">Contact</a> |
-    <a href="/verse/KJV">Verse (KJV)</a> |
-    <a href="/verse/WEB">Verse (WEB)</a>
+    <a href="{{ url_for('home') }}">Home</a> |
+    <a href="{{ url_for('about') }}">About</a> |
+    <a href="{{ url_for('contact') }}">Contact</a> |
+    <a href="{{ url_for('verse', translation='KJV') }}">Verse (KJV)</a> |
+    <a href="{{ url_for('verse', translation='WEB') }}">Verse (WEB)</a>
     <!-- Dark mode toggle -->
     <button id="darkModeToggle" class="btn btn-sm btn-secondary ms-2">🌙</button>
     
-    <!-- ✅ Title + Search + Google Translate widget -->
+    <!-- ✅ Title + Google Translate widget -->
     <div class="ms-3 d-inline-block">
-      <label class="fw-bold">🌐 Change Language:</label><br>
-      <input type="text" id="languageSearch" placeholder="Type to filter...">
+      <label class="fw-bold">🌐 Change Language:</label>
       <div id="google_translate_element"></div>
     </div>
   </nav>
@@ -57,19 +50,19 @@
   <p>Select a translation and explore verses:</p>
 
   <ul>
-    <li class="daily-verse"><a href="/verse/KJV">Daily Verse (KJV)</a></li>
-    <li class="daily-verse"><a href="/verse/WEB">Daily Verse (WEB)</a></li>
-    <li><a href="/search/KJV">Search (KJV)</a></li>
-    <li><a href="/search/WEB">Search (WEB)</a></li>
-    <li><a href="/verses/KJV">All Verses (KJV)</a></li>
-    <li><a href="/verses/WEB">All Verses (WEB)</a></li>
+    <li class="daily-verse"><a href="{{ url_for('verse', translation='KJV') }}">Daily Verse (KJV)</a></li>
+    <li class="daily-verse"><a href="{{ url_for('verse', translation='WEB') }}">Daily Verse (WEB)</a></li>
+    <li><a href="{{ url_for('search', translation='KJV') }}">Search (KJV)</a></li>
+    <li><a href="{{ url_for('search', translation='WEB') }}">Search (WEB)</a></li>
+    <li><a href="{{ url_for('verses', translation='KJV') }}">All Verses (KJV)</a></li>
+    <li><a href="{{ url_for('verses', translation='WEB') }}">All Verses (WEB)</a></li>
   </ul>
 
   <!-- ✅ Footer -->
   <footer class="mt-4 text-center">
     <p>
-      <a href="/terms">Terms of Use</a> |
-      <a href="/privacy">Privacy Policy</a>
+      <a href="{{ url_for('terms') }}">Terms of Use</a> |
+      <a href="{{ url_for('privacy') }}">Privacy Policy</a>
     </p>
   </footer>
 
@@ -91,38 +84,6 @@
     }
   </script>
   <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
-  <!-- ✅ Add search functionality -->
-  <script>
-    document.getElementById('languageSearch').addEventListener('keyup', function() {
-      var filter = this.value.toLowerCase();
-      var frame = document.querySelector('iframe.goog-te-menu-frame');
-      if (frame) {
-        var innerDoc = frame.contentDocument || frame.contentWindow.document;
-        var items = innerDoc.querySelectorAll('.goog-te-menu2-item span.text');
-        items.forEach(function(el) {
-          if (el.innerText.toLowerCase().includes(filter)) {
-            el.parentElement.style.display = '';
-          } else {
-            el.parentElement.style.display = 'none';
-          }
-        });
-      }
-    });
-  </script>
-
-  <!-- ✅ Infolinks script -->
-  <script type="text/javascript">
-    var infolinks_pid = 3443532;   <!-- replace with your publisher ID -->
-    var infolinks_wsid = 0;
-  </script>
-  <script type="text/javascript" src="//resources.infolinks.com/js/infolinks_main.js"></script>
-
-  <!-- ✅ Adsterra script -->
-  <script async src="https://pl28716692.effectivegatecpm.com/33/b8/2a/33b82ac6188a5f121565f77208f03f96.js"></script>
-
-  <!-- ✅ AAP script (replace with your actual AAP script URL) -->
-  <script async src="https://your-aap-network.com/path/to/aap-script.js"></script>
 
 </body>
 </html>
