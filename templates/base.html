@@ -12,6 +12,9 @@
   <link rel="stylesheet" href="/static/css/style.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
+  <!-- ✅ Select2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
+
   <title>Home | Bible App</title>
 </head>
 <body class="container mt-4">
@@ -25,8 +28,29 @@
     <a href="/verse/WEB">Verse (WEB)</a>
     <!-- Dark mode toggle -->
     <button id="darkModeToggle" class="btn btn-sm btn-secondary ms-2">🌙</button>
-    <!-- Google Translate widget -->
-    <div id="google_translate_element" class="d-inline ms-3"></div>
+    
+    <!-- ✅ Searchable Language Selector -->
+    <select id="languageSelector" style="width:250px;" class="ms-3">
+      <option></option>
+      <!-- 🔹 Full ISO-639 language list (sample shown, extend with all) -->
+      <option value="af">Afrikaans</option>
+      <option value="sq">Albanian</option>
+      <option value="am">Amharic</option>
+      <option value="ar">Arabic</option>
+      <option value="hy">Armenian</option>
+      <option value="az">Azerbaijani</option>
+      <option value="bn">Bengali</option>
+      <option value="zh-CN">Chinese (Simplified)</option>
+      <option value="zh-TW">Chinese (Traditional)</option>
+      <option value="fr">French</option>
+      <option value="de">German</option>
+      <option value="sw">Swahili</option>
+      <option value="es">Spanish</option>
+      <option value="ru">Russian</option>
+      <option value="yo">Yoruba</option>
+      <option value="zu">Zulu</option>
+      <!-- 🔹 Continue adding all languages from your list -->
+    </select>
   </nav>
 
   <!-- ✅ Page content -->
@@ -58,7 +82,38 @@
     });
   </script>
 
-  <!-- ✅ Google Translate script (all languages) -->
+  <!-- ✅ jQuery + Select2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
+
+  <!-- ✅ Initialize Select2 -->
+  <script>
+    $(document).ready(function() {
+      $('#languageSelector').select2({
+        placeholder: "Select Language",
+        allowClear: true
+      });
+
+      // ✅ Hook into Google Translate iframe
+      $('#languageSelector').on('change', function() {
+        var lang = $(this).val();
+        if (lang) {
+          var frame = document.querySelector('iframe.goog-te-menu-frame');
+          if (frame) {
+            var innerDoc = frame.contentDocument || frame.contentWindow.document;
+            var langElements = innerDoc.querySelectorAll('.goog-te-menu2-item span.text');
+            langElements.forEach(function(el) {
+              if (el.innerText.toLowerCase().includes(lang.toLowerCase())) {
+                el.click();
+              }
+            });
+          }
+        }
+      });
+    });
+  </script>
+
+  <!-- ✅ Google Translate script -->
   <script type="text/javascript">
     function googleTranslateElementInit() {
       new google.translate.TranslateElement(
