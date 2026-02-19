@@ -12,10 +12,25 @@
   <link rel="stylesheet" href="/static/css/style.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- ✅ Select2 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
-
   <title>Home | Bible App</title>
+
+  <style>
+    /* ✅ Style Google Translate dropdown */
+    .goog-te-menu2 {
+      max-height: 300px !important;   /* Limit height */
+      overflow-y: auto !important;    /* Add scroll bar */
+      width: 250px !important;        /* Control width */
+    }
+    .goog-te-menu2-item {
+      font-size: 14px !important;     /* Cleaner text */
+    }
+    /* ✅ Add search box styling */
+    #languageSearch {
+      width: 250px;
+      margin-bottom: 5px;
+      padding: 5px;
+    }
+  </style>
 </head>
 <body class="container mt-4">
 
@@ -29,71 +44,12 @@
     <!-- Dark mode toggle -->
     <button id="darkModeToggle" class="btn btn-sm btn-secondary ms-2">🌙</button>
     
-    <!-- ✅ Searchable Language Selector -->
-    <label for="languageSelector" class="ms-3 me-1 fw-bold">🌐 Change Language:</label>
-    <select id="languageSelector" style="width:250px;">
-      <option></option>
-      <!-- 🔹 Full Google Translate language list -->
-      <option value="af">Afrikaans</option>
-      <option value="sq">Albanian</option>
-      <option value="am">Amharic</option>
-      <option value="ar">Arabic</option>
-      <option value="hy">Armenian</option>
-      <option value="az">Azerbaijani</option>
-      <option value="bn">Bengali</option>
-      <option value="bg">Bulgarian</option>
-      <option value="ca">Catalan</option>
-      <option value="zh-CN">Chinese (Simplified)</option>
-      <option value="zh-TW">Chinese (Traditional)</option>
-      <option value="hr">Croatian</option>
-      <option value="cs">Czech</option>
-      <option value="da">Danish</option>
-      <option value="nl">Dutch</option>
-      <option value="en">English</option>
-      <option value="et">Estonian</option>
-      <option value="fil">Filipino</option>
-      <option value="fi">Finnish</option>
-      <option value="fr">French</option>
-      <option value="de">German</option>
-      <option value="el">Greek</option>
-      <option value="gu">Gujarati</option>
-      <option value="he">Hebrew</option>
-      <option value="hi">Hindi</option>
-      <option value="hu">Hungarian</option>
-      <option value="is">Icelandic</option>
-      <option value="id">Indonesian</option>
-      <option value="it">Italian</option>
-      <option value="ja">Japanese</option>
-      <option value="kn">Kannada</option>
-      <option value="ko">Korean</option>
-      <option value="lv">Latvian</option>
-      <option value="lt">Lithuanian</option>
-      <option value="ms">Malay</option>
-      <option value="ml">Malayalam</option>
-      <option value="mr">Marathi</option>
-      <option value="no">Norwegian</option>
-      <option value="pl">Polish</option>
-      <option value="pt">Portuguese</option>
-      <option value="ro">Romanian</option>
-      <option value="ru">Russian</option>
-      <option value="sr">Serbian</option>
-      <option value="sk">Slovak</option>
-      <option value="sl">Slovenian</option>
-      <option value="es">Spanish</option>
-      <option value="sw">Swahili</option>
-      <option value="sv">Swedish</option>
-      <option value="ta">Tamil</option>
-      <option value="te">Telugu</option>
-      <option value="th">Thai</option>
-      <option value="tr">Turkish</option>
-      <option value="uk">Ukrainian</option>
-      <option value="ur">Urdu</option>
-      <option value="vi">Vietnamese</option>
-      <option value="cy">Welsh</option>
-      <option value="yo">Yoruba</option>
-      <option value="zu">Zulu</option>
-      <!-- 🔹 Continue adding all languages from Google Translate list -->
-    </select>
+    <!-- ✅ Title + Search + Google Translate widget -->
+    <div class="ms-3 d-inline-block">
+      <label class="fw-bold">🌐 Change Language:</label><br>
+      <input type="text" id="languageSearch" placeholder="Type to filter...">
+      <div id="google_translate_element"></div>
+    </div>
   </nav>
 
   <!-- ✅ Page content -->
@@ -125,39 +81,7 @@
     });
   </script>
 
-  <!-- ✅ jQuery + Select2 JS -->
-  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
-
-  <!-- ✅ Initialize Select2 -->
-  <script>
-    $(document).ready(function() {
-      $('#languageSelector').select2({
-        placeholder: "Select Language",
-        allowClear: true
-      });
-
-      // ✅ Hook into Google Translate iframe
-      $('#languageSelector').on('change', function() {
-        var lang = $(this).val();
-        if (lang) {
-          var frame = document.querySelector('iframe.goog-te-menu-frame');
-          if (frame) {
-            var innerDoc = frame.contentDocument || frame.contentWindow.document;
-            var langElements = innerDoc.querySelectorAll('.goog-te-menu2-item span.text');
-            langElements.forEach(function(el) {
-              if (el.innerText.toLowerCase().includes(lang.toLowerCase())) {
-                el.click();
-              }
-            });
-          }
-        }
-      });
-    });
-  </script>
-
   <!-- ✅ Google Translate script -->
-  <div id="google_translate_element" style="display:none;"></div>
   <script type="text/javascript">
     function googleTranslateElementInit() {
       new google.translate.TranslateElement(
@@ -167,6 +91,25 @@
     }
   </script>
   <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+  <!-- ✅ Add search functionality -->
+  <script>
+    document.getElementById('languageSearch').addEventListener('keyup', function() {
+      var filter = this.value.toLowerCase();
+      var frame = document.querySelector('iframe.goog-te-menu-frame');
+      if (frame) {
+        var innerDoc = frame.contentDocument || frame.contentWindow.document;
+        var items = innerDoc.querySelectorAll('.goog-te-menu2-item span.text');
+        items.forEach(function(el) {
+          if (el.innerText.toLowerCase().includes(filter)) {
+            el.parentElement.style.display = '';
+          } else {
+            el.parentElement.style.display = 'none';
+          }
+        });
+      }
+    });
+  </script>
 
   <!-- ✅ Infolinks script -->
   <script type="text/javascript">
