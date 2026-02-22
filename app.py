@@ -2,12 +2,13 @@ import os
 import random
 import sqlite3
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
+from flask import Flask, render_template, request, flash, redirect, url_for, jsonify, session
 
 # ✅ Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = "supersecretkey"  # Needed for sessions
 
 # ✅ Load config depending on environment
 env = os.environ.get("FLASK_ENV", "development")
@@ -108,14 +109,6 @@ def get_credits(email):
 # ---------------------------
 # Helper functions for verses
 # ---------------------------
-def load_verses(translation="KJV"):
-    filename = f"verses_{translation.lower()}.txt"
-    try:
-        with open(filename, encoding="utf-8") as f:
-            return [line.strip() for line in f if line.strip()]
-    except FileNotFoundError:
-        return []
-
 def format_line(line):
     line = line.strip()
     if line.startswith("==="):
@@ -152,59 +145,52 @@ def contact():
 
     return render_template("contact.html")
 
+# ✅ Login route
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        name = request.form.get("name", "Anonymous")
+
+        add_user(name, email)
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM users WHERE email = ?", (email,))
+        row = cur.fetchone()
+        conn.close()
+
+        if row:
+            session["user_id"] = row["id"]
+            flash("Logged in successfully!", "success")
+            return redirect(url_for("home"))
+        else:
+            flash("Login failed.", "danger")
+
+    return render_template("login.html")
+
 @app.route("/verse/<translation>")
 def verse(translation):
-    # Get a random verse from DB instead of text file
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT * FROM verses WHERE translation = ? ORDER BY RANDOM() LIMIT 1", (translation,))
     row = cur.fetchone()
     conn.close()
 
+    user_id = session.get("user_id", None)
+
     if row:
         return render_template("verse.html",
                                verse=row["text"],
                                translation=row["translation"],
-                               verse_id=row["id"])
+                               verse_id=row["id"],
+                               user_id=user_id)
     else:
         return render_template("verse.html",
                                verse="No verses found.",
                                translation=translation.upper(),
-                               verse_id=None)
-
-@app.route("/search/<translation>", methods=["GET", "POST"])
-def search(translation):
-    verses = load_verses(translation)
-    results = []
-    user_credits = None
-    if request.method == "POST":
-        keyword = request.form.get("keyword", "").lower()
-        email = request.form.get("email")
-        for v in verses:
-            if keyword in v.lower():
-                results.append(format_line(v))
-        if email:
-            add_user("Anonymous", email)
-            add_credits(email, 1)
-            user_credits = get_credits(email)
-    return render_template("search.html", results=results, translation=translation.upper(), credits=user_credits)
-
-@app.route("/search_book/<translation>", methods=["GET", "POST"])
-def search_book(translation):
-    verses = load_verses(translation)
-    results = []
-    if request.method == "POST":
-        bookname = request.form.get("bookname", "").lower()
-        for v in verses:
-            if bookname in v.lower():
-                results.append(format_line(v))
-    return render_template("search_book.html", results=results, translation=translation.upper())
-
-@app.route("/verses/<translation>")
-def verses(translation):
-    verses = load_verses(translation)
-    formatted = [format_line(v) for v in verses]
-    return render_template("verses.html", verses=formatted, translation=translation.upper())
+                               verse_id=None,
+                               user_id=user_id)
 
 # ✅ Favorites Routes
 @app.route("/add_favorite", methods=["POST"])
