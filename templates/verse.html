@@ -1,18 +1,33 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ translation }} Verse of the Day</title>
+</head>
+<body>
+    <h1>{{ translation }} Verse of the Day</h1>
 
-{% block title %}Daily Verse | Bible App{% endblock %}
+    <!-- Display the verse -->
+    <p>{{ verse }}</p>
 
-{% block content %}
-<h1>Daily Verse ({{ translation }})</h1>
+    <!-- ⭐ Save to Favorites -->
+    <button onclick="addFavorite(1, 1)">⭐ Save to Favorites</button>
 
-<!-- ✅ Highlighted verse using your .daily-verse style -->
-<div class="daily-verse">
-  {{ verse|safe }}
-</div>
+    <!-- Link to Favorites page -->
+    <p><a href="{{ url_for('favorites', user_id=1) }}">View My Favorites</a></p>
 
-<p class="mt-3">
-  <a href="{{ url_for('verses', translation=translation) }}" class="btn btn-primary">
-    View All Verses ({{ translation }})
-  </a>
-</p>
-{% endblock %}
+    <script>
+    function addFavorite(userId, verseId) {
+        fetch('/add_favorite', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, verse_id: verseId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert("Verse saved to favorites!");
+        });
+    }
+    </script>
+</body>
+</html>
