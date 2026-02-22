@@ -107,19 +107,6 @@ def get_credits(email):
     return row[0] if row else 0
 
 # ---------------------------
-# Helper functions for verses
-# ---------------------------
-def format_line(line):
-    line = line.strip()
-    if line.startswith("==="):
-        book_name = line.strip("= ").title()
-        return f"<h2 style='color:darkblue'>{book_name}</h2>"
-    elif "World English Bible" in line or "King James Version" in line:
-        return f"<h3 style='color:green'>{line}</h3>"
-    else:
-        return f"<p>{line}</p>"
-
-# ---------------------------
 # Routes
 # ---------------------------
 @app.route("/")
@@ -169,6 +156,13 @@ def login():
 
     return render_template("login.html")
 
+# ✅ Logout route
+@app.route("/logout")
+def logout():
+    session.pop("user_id", None)
+    flash("You have been logged out.", "info")
+    return redirect(url_for("home"))
+
 @app.route("/verse/<translation>")
 def verse(translation):
     conn = get_db_connection()
@@ -209,6 +203,11 @@ def add_favorite():
 
 @app.route("/favorites/<int:user_id>")
 def favorites(user_id):
+    # Protect route: only allow logged-in user to view their own favorites
+    if session.get("user_id") != user_id:
+        flash("You are not authorized to view this page.", "danger")
+        return redirect(url_for("login"))
+
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("""
