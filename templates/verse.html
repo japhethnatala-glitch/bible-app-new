@@ -1,36 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ translation }} Verse of the Day</title>
-</head>
-<body>
-    <h1>{{ translation }} Verse of the Day</h1>
+{% extends "base.html" %}
+{% block title %}Verse of the Day{% endblock %}
+{% block content %}
+  <h1>{{ translation }} Verse of the Day</h1>
+  <p>{{ verse }}</p>
 
-    <p>{{ verse }}</p>
+  {% if verse_id and user_id %}
+      <button onclick="addFavorite({{ user_id }}, {{ verse_id }})">⭐ Save to Favorites</button>
+  {% elif verse_id %}
+      <p><a href="{{ url_for('login') }}">Login to save favorites</a></p>
+  {% endif %}
 
-    {% if verse_id and user_id %}
-        <button onclick="addFavorite({{ user_id }}, {{ verse_id }})">⭐ Save to Favorites</button>
-    {% elif verse_id %}
-        <p><a href="{{ url_for('login') }}">Login to save favorites</a></p>
-    {% endif %}
+  {% if user_id %}
+      <p><a href="{{ url_for('favorites', user_id=user_id) }}">View My Favorites</a></p>
+  {% endif %}
 
-    {% if user_id %}
-        <p><a href="{{ url_for('favorites', user_id=user_id) }}">View My Favorites</a></p>
-    {% endif %}
-
-    <script>
+  <script>
     function addFavorite(userId, verseId) {
-        fetch('/add_favorite', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: userId, verse_id: verseId })
-        })
-        .then(res => res.json())
-        .then(data => {
-            alert("Verse saved to favorites!");
-        });
+      fetch('/add_favorite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId, verse_id: verseId })
+      })
+      .then(res => res.json())
+      .then(data => {
+          alert("Verse saved to favorites!");
+      });
     }
-    </script>
-</body>
-</html>
+  </script>
+{% endblock %}
