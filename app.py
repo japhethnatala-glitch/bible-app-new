@@ -1,5 +1,4 @@
 import os
-import random
 import sqlite3
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify, session
@@ -16,18 +15,6 @@ if env == "production":
     app.config.from_object("config.ProductionConfig")
 else:
     app.config.from_object("config.DevelopmentConfig")
-
-# ---------------------------
-# Permanent caching for static files
-# ---------------------------
-@app.after_request
-def add_header(response):
-    if "text/css" in response.headers.get("Content-Type", "") \
-       or "application/javascript" in response.headers.get("Content-Type", "") \
-       or "image" in response.headers.get("Content-Type", "") \
-       or "font" in response.headers.get("Content-Type", ""):
-        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
-    return response
 
 # ---------------------------
 # Database initialization
@@ -185,6 +172,32 @@ def verse(translation):
                                translation=translation.upper(),
                                verse_id=None,
                                user_id=user_id)
+
+# ✅ Search route
+@app.route("/search/<translation>", methods=["GET", "POST"])
+def search(translation):
+    results = []
+    user_credits = None
+
+    if request.method == "POST":
+        keyword = request.form.get("keyword", "").lower()
+        email = request.form.get("email")
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM verses WHERE translation = ? AND text LIKE ?", (translation, f"%{keyword}%"))
+        rows = cur.fetchall()
+        conn.close()
+
+        for row in rows:
+            results.append(f"{row['book']} {row['chapter']}:{row['verse']} — {row['text']}")
+
+        if email:
+            add_user("Anonymous", email)
+            add_credits(email, 1)
+            user_credits = get_credits(email)
+
+    return render_template("search.html", results=results, translation=translation.upper(), credits=user_credits)
 
 # ✅ Favorites Routes
 @app.route("/add_favorite", methods=["POST"])
