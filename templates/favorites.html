@@ -11,8 +11,9 @@
         <ul>
             {% for fav in favorites %}
                 <li>
-                    Verse ID: {{ fav['verse_id'] }} 
-                    (saved on {{ fav['created_at'] }})
+                    <strong>{{ fav['book'] }} {{ fav['chapter'] }}:{{ fav['verse'] }}</strong><br>
+                    "{{ fav['text'] }}" <em>({{ fav['translation'] }})</em><br>
+                    <small>Saved on {{ fav['created_at'] }}</small>
                 </li>
             {% endfor %}
         </ul>
@@ -20,7 +21,6 @@
         <p>You have no favorites saved yet.</p>
     {% endif %}
 
-    <!-- Link back to home -->
     <p><a href="{{ url_for('home') }}">Back to Home</a></p>
 </body>
 </html>
