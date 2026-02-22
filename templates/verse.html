@@ -10,8 +10,10 @@
     <!-- Display the verse -->
     <p>{{ verse }}</p>
 
-    <!-- ⭐ Save to Favorites -->
-    <button onclick="addFavorite(1, 1)">⭐ Save to Favorites</button>
+    {% if verse_id %}
+        <!-- ⭐ Save to Favorites -->
+        <button onclick="addFavorite(1, {{ verse_id }})">⭐ Save to Favorites</button>
+    {% endif %}
 
     <!-- Link to Favorites page -->
     <p><a href="{{ url_for('favorites', user_id=1) }}">View My Favorites</a></p>
