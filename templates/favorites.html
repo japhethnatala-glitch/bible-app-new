@@ -1,26 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Your Favorites</title>
-</head>
-<body>
-    <h1>Saved Favorites</h1>
+{% extends "base.html" %}
+{% block title %}My Favorites{% endblock %}
+{% block content %}
+  <h1>Saved Favorites</h1>
 
-    {% if favorites %}
-        <ul>
-            {% for fav in favorites %}
-                <li>
-                    <strong>{{ fav['book'] }} {{ fav['chapter'] }}:{{ fav['verse'] }}</strong><br>
-                    "{{ fav['text'] }}" <em>({{ fav['translation'] }})</em><br>
-                    <small>Saved on {{ fav['created_at'] }}</small>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>You have no favorites saved yet.</p>
-    {% endif %}
-
-    <p><a href="{{ url_for('home') }}">Back to Home</a></p>
-</body>
-</html>
+  {% if favorites %}
+      <ul>
+          {% for fav in favorites %}
+              <li>
+                  <strong>{{ fav['book'] }} {{ fav['chapter'] }}:{{ fav['verse'] }}</strong><br>
+                  "{{ fav['text'] }}" <em>({{ fav['translation'] }})</em><br>
+                  <small>Saved on {{ fav['created_at'] }}</small>
+              </li>
+          {% endfor %}
+      </ul>
+  {% else %}
+      <p>You have no favorites saved yet.</p>
+  {% endif %}
+{% endblock %}
