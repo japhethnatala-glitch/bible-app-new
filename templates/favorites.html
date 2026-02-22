@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Favorites</title>
+</head>
+<body>
+    <h1>Saved Favorites</h1>
+
+    {% if favorites %}
+        <ul>
+            {% for fav in favorites %}
+                <li>
+                    Verse ID: {{ fav['verse_id'] }} 
+                    (saved on {{ fav['created_at'] }})
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have no favorites saved yet.</p>
+    {% endif %}
+
+    <!-- Link back to home -->
+    <p><a href="{{ url_for('home') }}">Back to Home</a></p>
+</body>
+</html>
