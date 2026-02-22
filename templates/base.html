@@ -18,27 +18,8 @@
   <title>{% block title %}Bible App{% endblock %}</title>
 
   <style>
-    .goog-te-menu2 {
-      max-height: 300px !important;
-      overflow-y: auto !important;
-      width: 250px !important;
-    }
-    .goog-te-menu2-item {
-      font-size: 14px !important;
-    }
-    .dark-mode {
-      background-color: #121212 !important;
-      color: #f5f5f5 !important;
-    }
-    /* Smooth fade-in for ad reappearance */
-    #adContainer {
-      transition: opacity 1s ease-in-out;
-    }
-    /* Clock styling */
-    #clock {
-      font-weight: bold;
-      font-size: 14px;
-    }
+    .dark-mode { background-color: #121212 !important; color: #f5f5f5 !important; }
+    #clock { font-weight: bold; font-size: 14px; }
   </style>
 </head>
 <body class="container mt-4">
@@ -50,7 +31,15 @@
       <a href="{{ url_for('about') }}">About</a> |
       <a href="{{ url_for('contact') }}">Contact</a> |
       <a href="{{ url_for('verse', translation='KJV') }}">Verse (KJV)</a> |
-      <a href="{{ url_for('verse', translation='WEB') }}">Verse (WEB)</a>
+      <a href="{{ url_for('verse', translation='WEB') }}">Verse (WEB)</a> |
+
+      {% if session.get("user_id") %}
+        <a href="{{ url_for('favorites', user_id=session['user_id']) }}">Favorites</a> |
+        <a href="{{ url_for('logout') }}">Logout</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">Login</a>
+      {% endif %}
+
       <button id="darkModeToggle" class="btn btn-sm btn-secondary ms-2">🌙</button>
       <button id="colorToggle" class="btn btn-sm btn-info ms-2">🎨</button>
       
@@ -64,6 +53,17 @@
     <div id="clock"></div>
   </nav>
 
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="alert-container">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
   <!-- Page content -->
   <main>
     {% block content %}{% endblock %}
@@ -75,124 +75,54 @@
       <a href="{{ url_for('terms') }}">Terms of Use</a> |
       <a href="{{ url_for('privacy') }}">Privacy Policy</a>
     </p>
-
-    <!-- ✅ Responsive AADS Ad Unit with Close Button -->
-    <div id="adContainer" class="mt-3" style="position: relative; max-width: 100%; text-align: center;">
-      <!-- Close button -->
-      <button id="closeAd" 
-              style="position: absolute; top: -10px; right: -10px; background: #f44336; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;">
-        ✕
-      </button>
-
-      <!-- AADS Ad iframe -->
-      <iframe data-aa='2427594' 
-              src='//acceptable.a-ads.com/2427594/?size=Adaptive'
-              style='border:0; padding:0; width:100%; max-width:320px; height:250px; overflow:hidden; display:block; margin:auto;'>
-      </iframe>
-    </div>
   </footer>
 
-  <!-- Dark mode script with persistence -->
+  <!-- ✅ Dark mode + background color persistence -->
   <script>
     const toggle = document.getElementById('darkModeToggle');
-
-    // Load saved preference
     if (localStorage.getItem('darkMode') === 'enabled') {
       document.body.classList.add('dark-mode');
     }
-
     toggle.addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');
-      if (document.body.classList.contains('dark-mode')) {
-        localStorage.setItem('darkMode', 'enabled');
-      } else {
-        localStorage.setItem('darkMode', 'disabled');
-      }
+      localStorage.setItem('darkMode', document.body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
     });
-  </script>
 
-  <!-- Google Translate script -->
-  <script type="text/javascript">
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement(
-        {pageLanguage: 'en'},
-        'google_translate_element'
-      );
-    }
-  </script>
-  <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
-  <!-- ✅ Background color scripts with persistence -->
-  <script>
-    const colors = ["#f0f8ff", "#ffe4e1", "#e6ffe6", "#fffacd", "#e0ffff", "#f5f5dc"];
-    let index = 0;
-
-    // Load saved background preference
+    const bgColors = ["#ffffff", "#f0f8ff", "#ffe4e1", "#e6ffe6", "#fffacd", "#e0ffff"];
+    let bgIndex = 0;
     const savedBg = localStorage.getItem('backgroundColor');
     if (savedBg && !document.body.classList.contains('dark-mode')) {
       document.body.style.backgroundColor = savedBg;
     }
-
-    // Automatic cycling every 15 seconds (paused in dark mode)
-    function changeBackground() {
-      if (!document.body.classList.contains('dark-mode')) {
-        document.body.style.backgroundColor = colors[index];
-        localStorage.setItem('backgroundColor', colors[index]); // save preference
-        index = (index + 1) % colors.length;
-      }
-    }
-    setInterval(changeBackground, 15000);
-
-    // Manual button control
-    const bgColors = ["#ffffff", "#f0f8ff", "#ffe4e1", "#e6ffe6", "#fffacd", "#e0ffff"];
-    let bgIndex = 0;
-
     document.getElementById('colorToggle').addEventListener('click', () => {
       if (!document.body.classList.contains('dark-mode')) {
         bgIndex = (bgIndex + 1) % bgColors.length;
         document.body.style.backgroundColor = bgColors[bgIndex];
-        localStorage.setItem('backgroundColor', bgColors[bgIndex]); // save preference
+        localStorage.setItem('backgroundColor', bgColors[bgIndex]);
       }
     });
   </script>
 
-  <!-- ✅ Ad close + reappear script -->
-  <script>
-    const adContainer = document.getElementById('adContainer');
-    const closeBtn = document.getElementById('closeAd');
-
-    closeBtn.addEventListener('click', () => {
-      adContainer.style.opacity = '0';
-      setTimeout(() => {
-        adContainer.style.display = 'none';
-      }, 1000); // fade out
-
-      // Reappear after 3 minutes (180000 ms)
-      setTimeout(() => {
-        adContainer.style.display = 'block';
-        adContainer.style.opacity = '1'; // fade in
-      }, 180000);
-    });
+  <!-- ✅ Google Translate -->
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
+    }
   </script>
+  <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-  <!-- ✅ Live Clock Script with AM/PM -->
+  <!-- ✅ Live Clock -->
   <script>
     function updateClock() {
       const now = new Date();
       const options = { 
-        weekday: 'short',
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hour12: true   // ✅ forces 12-hour format with AM/PM
+        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+        hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true
       };
       document.getElementById('clock').textContent = now.toLocaleString('en-US', options);
     }
     setInterval(updateClock, 1000);
-    updateClock(); // run immediately
+    updateClock();
   </script>
 
 </body>
