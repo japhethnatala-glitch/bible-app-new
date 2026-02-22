@@ -211,7 +211,13 @@ def add_favorite():
 def favorites(user_id):
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT verse_id, created_at FROM favorites WHERE user_id = ?", (user_id,))
+    cur.execute("""
+        SELECT v.book, v.chapter, v.verse, v.text, v.translation, f.created_at
+        FROM favorites f
+        JOIN verses v ON f.verse_id = v.id
+        WHERE f.user_id = ?
+        ORDER BY f.created_at DESC
+    """, (user_id,))
     rows = cur.fetchall()
     conn.close()
     return render_template("favorites.html", favorites=rows)
