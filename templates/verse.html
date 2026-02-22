@@ -13,6 +13,8 @@
     {% if verse_id %}
         <!-- ⭐ Save to Favorites -->
         <button onclick="addFavorite(1, {{ verse_id }})">⭐ Save to Favorites</button>
+    {% else %}
+        <p>No verse available to save.</p>
     {% endif %}
 
     <!-- Link to Favorites page -->
