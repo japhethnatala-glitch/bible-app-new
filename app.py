@@ -154,9 +154,23 @@ def contact():
 
 @app.route("/verse/<translation>")
 def verse(translation):
-    verses = load_verses(translation)
-    daily_verse = random.choice(verses) if verses else "No verses found."
-    return render_template("verse.html", verse=daily_verse, translation=translation.upper())
+    # Get a random verse from DB instead of text file
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM verses WHERE translation = ? ORDER BY RANDOM() LIMIT 1", (translation,))
+    row = cur.fetchone()
+    conn.close()
+
+    if row:
+        return render_template("verse.html",
+                               verse=row["text"],
+                               translation=row["translation"],
+                               verse_id=row["id"])
+    else:
+        return render_template("verse.html",
+                               verse="No verses found.",
+                               translation=translation.upper(),
+                               verse_id=None)
 
 @app.route("/search/<translation>", methods=["GET", "POST"])
 def search(translation):
