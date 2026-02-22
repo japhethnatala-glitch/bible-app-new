@@ -2,7 +2,7 @@ import os
 import random
 import sqlite3
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 
 # ✅ Load environment variables
 load_dotenv()
@@ -21,11 +21,6 @@ else:
 # ---------------------------
 @app.after_request
 def add_header(response):
-    """
-    Add headers to cache static files permanently (1 year).
-    Dynamic routes remain uncached.
-    """
-    # Only apply to static files (CSS, JS, images, fonts)
     if "text/css" in response.headers.get("Content-Type", "") \
        or "application/javascript" in response.headers.get("Content-Type", "") \
        or "image" in response.headers.get("Content-Type", "") \
@@ -34,9 +29,55 @@ def add_header(response):
     return response
 
 # ---------------------------
+# Database initialization
+# ---------------------------
+def init_db():
+    conn = sqlite3.connect("app.db")
+    cur = conn.cursor()
+
+    # Create verses table
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS verses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        book TEXT,
+        chapter INTEGER,
+        verse INTEGER,
+        text TEXT,
+        translation TEXT
+    )
+    """)
+
+    # Create users table
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        email TEXT UNIQUE,
+        credits INTEGER DEFAULT 0
+    )
+    """)
+
+    # Create favorites table
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        verse_id INTEGER NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id),
+        FOREIGN KEY(verse_id) REFERENCES verses(id)
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+# Run initialization at startup
+init_db()
+
+# ---------------------------
 # Database connection + helpers
 # ---------------------------
-
 def get_db_connection():
     conn = sqlite3.connect("app.db")
     conn.row_factory = sqlite3.Row
@@ -67,7 +108,6 @@ def get_credits(email):
 # ---------------------------
 # Helper functions for verses
 # ---------------------------
-
 def load_verses(translation="KJV"):
     filename = f"verses_{translation.lower()}.txt"
     try:
@@ -89,7 +129,6 @@ def format_line(line):
 # ---------------------------
 # Routes
 # ---------------------------
-
 @app.route("/")
 def home():
     return render_template("home.html")
@@ -132,7 +171,7 @@ def search(translation):
                 results.append(format_line(v))
         if email:
             add_user("Anonymous", email)
-            add_credits(email, 1)  # reward 1 credit per search
+            add_credits(email, 1)
             user_credits = get_credits(email)
     return render_template("search.html", results=results, translation=translation.upper(), credits=user_credits)
 
@@ -153,6 +192,30 @@ def verses(translation):
     formatted = [format_line(v) for v in verses]
     return render_template("verses.html", verses=formatted, translation=translation.upper())
 
+# ✅ Favorites Routes
+@app.route("/add_favorite", methods=["POST"])
+def add_favorite():
+    data = request.get_json()
+    user_id = data["user_id"]
+    verse_id = data["verse_id"]
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO favorites (user_id, verse_id) VALUES (?, ?)", (user_id, verse_id))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "success"})
+
+@app.route("/favorites/<int:user_id>")
+def favorites(user_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT verse_id, created_at FROM favorites WHERE user_id = ?", (user_id,))
+    rows = cur.fetchall()
+    conn.close()
+    return render_template("favorites.html", favorites=rows)
+
 # ✅ Legal Pages
 @app.route("/terms")
 def terms():
@@ -170,6 +233,5 @@ def offline():
 # ---------------------------
 # Run the app
 # ---------------------------
-
 if __name__ == "__main__":
     app.run(debug=True)
