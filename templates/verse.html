@@ -7,18 +7,17 @@
 <body>
     <h1>{{ translation }} Verse of the Day</h1>
 
-    <!-- Display the verse -->
     <p>{{ verse }}</p>
 
-    {% if verse_id %}
-        <!-- ⭐ Save to Favorites -->
-        <button onclick="addFavorite(1, {{ verse_id }})">⭐ Save to Favorites</button>
-    {% else %}
-        <p>No verse available to save.</p>
+    {% if verse_id and user_id %}
+        <button onclick="addFavorite({{ user_id }}, {{ verse_id }})">⭐ Save to Favorites</button>
+    {% elif verse_id %}
+        <p><a href="{{ url_for('login') }}">Login to save favorites</a></p>
     {% endif %}
 
-    <!-- Link to Favorites page -->
-    <p><a href="{{ url_for('favorites', user_id=1) }}">View My Favorites</a></p>
+    {% if user_id %}
+        <p><a href="{{ url_for('favorites', user_id=user_id) }}">View My Favorites</a></p>
+    {% endif %}
 
     <script>
     function addFavorite(userId, verseId) {
