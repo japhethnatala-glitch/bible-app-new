@@ -81,7 +81,7 @@ def load_translation(filename, translation):
                 if not line:
                     continue
 
-                # Detect book title line
+                # Detect book title line (e.g. "Revelation - King James Version (KJV)")
                 if "-" in line and "Version" in line:
                     current_book = line.split("-")[0].strip()
                     continue
@@ -206,7 +206,7 @@ def search(translation):
 def verses(translation):
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM verses WHERE translation = ?", (translation,))
+    cur.execute("SELECT * FROM verses WHERE translation = ? ORDER BY book, chapter, verse", (translation,))
     rows = cur.fetchall()
     conn.close()
     return render_template("verses.html", verses=rows, translation=translation.upper())
