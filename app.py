@@ -98,7 +98,7 @@ def load_translation(filename, translation):
         conn.commit()
     conn.close()
 
-# ✅ Load both translations
+# ✅ Load both translations once
 load_translation("verses_kjv.txt", "KJV")
 load_translation("verses_web.txt", "WEB")
 
