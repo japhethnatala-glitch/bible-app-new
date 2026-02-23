@@ -7,14 +7,7 @@ from flask import Flask, render_template, request, flash, redirect, url_for, jso
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"  # Needed for sessions
-
-# ✅ Load config depending on environment
-env = os.environ.get("FLASK_ENV", "development")
-if env == "production":
-    app.config.from_object("config.ProductionConfig")
-else:
-    app.config.from_object("config.DevelopmentConfig")
+app.secret_key = "supersecretkey"
 
 # ---------------------------
 # Database initialization
@@ -64,54 +57,63 @@ def init_db():
 init_db()
 
 # ---------------------------
-# Database connection + helpers
+# Database connection helper
 # ---------------------------
 def get_db_connection():
     conn = sqlite3.connect("app.db")
     conn.row_factory = sqlite3.Row
     return conn
 
-def add_user(name, email):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("INSERT OR IGNORE INTO users (name, email) VALUES (?, ?)", (name, email))
-    conn.commit()
-    conn.close()
-
-def add_credits(email, amount):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("UPDATE users SET credits = credits + ? WHERE email = ?", (amount, email))
-    conn.commit()
-    conn.close()
-
-def get_credits(email):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT credits FROM users WHERE email = ?", (email,))
-    row = cur.fetchone()
-    conn.close()
-    return row[0] if row else 0
-
 # ---------------------------
-# Seed database with sample verses
+# Loader functions for verses
 # ---------------------------
-def seed_db():
+def load_kjv():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM verses")
-    count = cur.fetchone()[0]
-    if count == 0:
-        sample_verses = [
-            ("John", 3, 16, "For God so loved the world...", "KJV"),
-            ("Psalm", 23, 1, "The Lord is my shepherd; I shall not want.", "KJV"),
-            ("John", 1, 1, "In the beginning was the Word...", "WEB")
-        ]
-        cur.executemany("INSERT INTO verses (book, chapter, verse, text, translation) VALUES (?, ?, ?, ?, ?)", sample_verses)
+    cur.execute("SELECT COUNT(*) FROM verses WHERE translation = 'KJV'")
+    if cur.fetchone()[0] == 0:  # Only load if empty
+        with open("verses_kjv.txt", encoding="utf-8") as f:
+            for line in f:
+                # Example line: "Genesis 1:1 In the beginning God created..."
+                parts = line.strip().split(" ", 2)
+                if len(parts) == 3:
+                    book = parts[0]
+                    chapter_verse = parts[1]
+                    text = parts[2]
+                    if ":" in chapter_verse:
+                        chapter, verse = chapter_verse.split(":")
+                        cur.execute(
+                            "INSERT INTO verses (book, chapter, verse, text, translation) VALUES (?, ?, ?, ?, ?)",
+                            (book, int(chapter), int(verse), text, "KJV")
+                        )
         conn.commit()
     conn.close()
 
-seed_db()
+def load_web():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM verses WHERE translation = 'WEB'")
+    if cur.fetchone()[0] == 0:  # Only load if empty
+        with open("verses_web.txt", encoding="utf-8") as f:
+            for line in f:
+                # Example line: "Genesis 1:1 In the beginning was the Word..."
+                parts = line.strip().split(" ", 2)
+                if len(parts) == 3:
+                    book = parts[0]
+                    chapter_verse = parts[1]
+                    text = parts[2]
+                    if ":" in chapter_verse:
+                        chapter, verse = chapter_verse.split(":")
+                        cur.execute(
+                            "INSERT INTO verses (book, chapter, verse, text, translation) VALUES (?, ?, ?, ?, ?)",
+                            (book, int(chapter), int(verse), text, "WEB")
+                        )
+        conn.commit()
+    conn.close()
+
+# ✅ Load verses at startup
+load_kjv()
+load_web()
 
 # ---------------------------
 # Routes
@@ -139,17 +141,16 @@ def contact():
 
     return render_template("contact.html")
 
-# ✅ Login route
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         email = request.form.get("email")
         name = request.form.get("name", "Anonymous")
 
-        add_user(name, email)
-
         conn = get_db_connection()
         cur = conn.cursor()
+        cur.execute("INSERT OR IGNORE INTO users (name, email) VALUES (?, ?)", (name, email))
+        conn.commit()
         cur.execute("SELECT id FROM users WHERE email = ?", (email,))
         row = cur.fetchone()
         conn.close()
@@ -163,7 +164,6 @@ def login():
 
     return render_template("login.html")
 
-# ✅ Logout route
 @app.route("/logout")
 def logout():
     session.pop("user_id", None)
@@ -193,16 +193,11 @@ def verse(translation):
                                verse_id=None,
                                user_id=user_id)
 
-# ✅ Search route
 @app.route("/search/<translation>", methods=["GET", "POST"])
 def search(translation):
     results = []
-    user_credits = None
-
     if request.method == "POST":
         keyword = request.form.get("keyword", "").lower()
-        email = request.form.get("email")
-
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("SELECT * FROM verses WHERE translation = ? AND text LIKE ?", (translation, f"%{keyword}%"))
@@ -212,14 +207,8 @@ def search(translation):
         for row in rows:
             results.append(f"{row['book']} {row['chapter']}:{row['verse']} — {row['text']}")
 
-        if email:
-            add_user("Anonymous", email)
-            add_credits(email, 1)
-            user_credits = get_credits(email)
+    return render_template("search.html", results=results, translation=translation.upper())
 
-    return render_template("search.html", results=results, translation=translation.upper(), credits=user_credits)
-
-# ✅ Verses route (for "All Verses")
 @app.route("/verses/<translation>")
 def verses(translation):
     conn = get_db_connection()
@@ -229,7 +218,6 @@ def verses(translation):
     conn.close()
     return render_template("verses.html", verses=rows, translation=translation.upper())
 
-# ✅ Favorites Routes
 @app.route("/add_favorite", methods=["POST"])
 def add_favorite():
     data = request.get_json()
@@ -246,7 +234,6 @@ def add_favorite():
 
 @app.route("/favorites/<int:user_id>")
 def favorites(user_id):
-    # Protect route: only allow logged-in user to view their own favorites
     if session.get("user_id") != user_id:
         flash("You are not authorized to view this page.", "danger")
         return redirect(url_for("login"))
@@ -264,7 +251,6 @@ def favorites(user_id):
     conn.close()
     return render_template("favorites.html", favorites=rows)
 
-# ✅ Legal Pages
 @app.route("/terms")
 def terms():
     return render_template("terms.html")
@@ -273,7 +259,6 @@ def terms():
 def privacy():
     return render_template("privacy.html")
 
-# ✅ Offline Page
 @app.route("/offline")
 def offline():
     return render_template("offline.html")
