@@ -74,18 +74,23 @@ def load_kjv():
     if cur.fetchone()[0] == 0:  # Only load if empty
         with open("verses_kjv.txt", encoding="utf-8") as f:
             for line in f:
-                # Example line: "Genesis 1:1 In the beginning God created..."
                 parts = line.strip().split(" ", 2)
                 if len(parts) == 3:
                     book = parts[0]
                     chapter_verse = parts[1]
                     text = parts[2]
                     if ":" in chapter_verse:
-                        chapter, verse = chapter_verse.split(":")
-                        cur.execute(
-                            "INSERT INTO verses (book, chapter, verse, text, translation) VALUES (?, ?, ?, ?, ?)",
-                            (book, int(chapter), int(verse), text, "KJV")
-                        )
+                        try:
+                            chapter, verse = chapter_verse.split(":")
+                            chapter = int(chapter)
+                            verse = int(verse)
+                            cur.execute(
+                                "INSERT INTO verses (book, chapter, verse, text, translation) VALUES (?, ?, ?, ?, ?)",
+                                (book, chapter, verse, text, "KJV")
+                            )
+                        except ValueError:
+                            # Skip malformed lines
+                            continue
         conn.commit()
     conn.close()
 
@@ -96,18 +101,23 @@ def load_web():
     if cur.fetchone()[0] == 0:  # Only load if empty
         with open("verses_web.txt", encoding="utf-8") as f:
             for line in f:
-                # Example line: "Genesis 1:1 In the beginning was the Word..."
                 parts = line.strip().split(" ", 2)
                 if len(parts) == 3:
                     book = parts[0]
                     chapter_verse = parts[1]
                     text = parts[2]
                     if ":" in chapter_verse:
-                        chapter, verse = chapter_verse.split(":")
-                        cur.execute(
-                            "INSERT INTO verses (book, chapter, verse, text, translation) VALUES (?, ?, ?, ?, ?)",
-                            (book, int(chapter), int(verse), text, "WEB")
-                        )
+                        try:
+                            chapter, verse = chapter_verse.split(":")
+                            chapter = int(chapter)
+                            verse = int(verse)
+                            cur.execute(
+                                "INSERT INTO verses (book, chapter, verse, text, translation) VALUES (?, ?, ?, ?, ?)",
+                                (book, chapter, verse, text, "WEB")
+                            )
+                        except ValueError:
+                            # Skip malformed lines
+                            continue
         conn.commit()
     conn.close()
 
