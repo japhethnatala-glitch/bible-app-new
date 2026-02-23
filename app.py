@@ -1,6 +1,5 @@
 import os
 import sqlite3
-import re
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify, session
 
@@ -17,7 +16,6 @@ def init_db():
     conn = sqlite3.connect("app.db")
     cur = conn.cursor()
 
-    # Create verses table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS verses (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,7 +27,6 @@ def init_db():
     )
     """)
 
-    # Create users table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,7 +36,6 @@ def init_db():
     )
     """)
 
-    # Create favorites table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS favorites (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,7 +50,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Run initialization at startup
 init_db()
 
 # ---------------------------
@@ -66,13 +61,13 @@ def get_db_connection():
     return conn
 
 # ---------------------------
-# Loader function for verse files
+# Loader function (no regex)
 # ---------------------------
 def load_translation(filename, translation):
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT COUNT(*) FROM verses WHERE translation = ?", (translation,))
-    if cur.fetchone()[0] == 0:  # Only load if empty
+    if cur.fetchone()[0] == 0:
         print(f"Loading {translation} verses from {filename}...")
         current_book = None
         with open(filename, encoding="utf-8") as f:
@@ -81,30 +76,29 @@ def load_translation(filename, translation):
                 if not line:
                     continue
 
-                # Detect book title line (e.g. "Revelation - King James Version (KJV)")
+                # Book title line
                 if "-" in line and "Version" in line:
                     current_book = line.split("-")[0].strip()
                     continue
 
-                # Detect verse line like [1:1] Text...
-                match = re.match(r"
-
-\[(\d+):(\d+)\]
-
-\s+(.*)", line)
-                if match and current_book:
-                    chapter = int(match.group(1))
-                    verse = int(match.group(2))
-                    text = match.group(3)
-
-                    cur.execute(
-                        "INSERT INTO verses (book, chapter, verse, text, translation) VALUES (?, ?, ?, ?, ?)",
-                        (current_book, chapter, verse, text, translation)
-                    )
+                # Verse line like [1:1] Text...
+                if line.startswith("[") and "]" in line and current_book:
+                    try:
+                        header, text = line.split("]", 1)
+                        header = header.strip("[]")
+                        if ":" in header:
+                            chapter, verse = header.split(":")
+                            cur.execute(
+                                "INSERT INTO verses (book, chapter, verse, text, translation) VALUES (?, ?, ?, ?, ?)",
+                                (current_book, int(chapter), int(verse), text.strip(), translation)
+                            )
+                    except Exception as e:
+                        print("Skipping line:", line, "Error:", e)
+                        continue
         conn.commit()
     conn.close()
 
-# ✅ Load both translations at startup
+# ✅ Load both translations
 load_translation("verses_kjv.txt", "KJV")
 load_translation("verses_web.txt", "WEB")
 
