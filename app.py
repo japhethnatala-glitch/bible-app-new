@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import re
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify, session
 
@@ -65,65 +66,47 @@ def get_db_connection():
     return conn
 
 # ---------------------------
-# Loader functions for verses
+# Loader function for verse files
 # ---------------------------
-def load_kjv():
+def load_translation(filename, translation):
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM verses WHERE translation = 'KJV'")
+    cur.execute("SELECT COUNT(*) FROM verses WHERE translation = ?", (translation,))
     if cur.fetchone()[0] == 0:  # Only load if empty
-        with open("verses_kjv.txt", encoding="utf-8") as f:
+        print(f"Loading {translation} verses from {filename}...")
+        current_book = None
+        with open(filename, encoding="utf-8") as f:
             for line in f:
-                parts = line.strip().split(" ", 2)
-                if len(parts) == 3:
-                    book = parts[0]
-                    chapter_verse = parts[1]
-                    text = parts[2]
-                    if ":" in chapter_verse:
-                        try:
-                            chapter, verse = chapter_verse.split(":")
-                            chapter = int(chapter)
-                            verse = int(verse)
-                            cur.execute(
-                                "INSERT INTO verses (book, chapter, verse, text, translation) VALUES (?, ?, ?, ?, ?)",
-                                (book, chapter, verse, text, "KJV")
-                            )
-                        except ValueError:
-                            # Skip malformed lines
-                            continue
+                line = line.strip()
+                if not line:
+                    continue
+
+                # Detect book title line
+                if "-" in line and "Version" in line:
+                    current_book = line.split("-")[0].strip()
+                    continue
+
+                # Detect verse line like [1:1] Text...
+                match = re.match(r"
+
+\[(\d+):(\d+)\]
+
+\s+(.*)", line)
+                if match and current_book:
+                    chapter = int(match.group(1))
+                    verse = int(match.group(2))
+                    text = match.group(3)
+
+                    cur.execute(
+                        "INSERT INTO verses (book, chapter, verse, text, translation) VALUES (?, ?, ?, ?, ?)",
+                        (current_book, chapter, verse, text, translation)
+                    )
         conn.commit()
     conn.close()
 
-def load_web():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM verses WHERE translation = 'WEB'")
-    if cur.fetchone()[0] == 0:  # Only load if empty
-        with open("verses_web.txt", encoding="utf-8") as f:
-            for line in f:
-                parts = line.strip().split(" ", 2)
-                if len(parts) == 3:
-                    book = parts[0]
-                    chapter_verse = parts[1]
-                    text = parts[2]
-                    if ":" in chapter_verse:
-                        try:
-                            chapter, verse = chapter_verse.split(":")
-                            chapter = int(chapter)
-                            verse = int(verse)
-                            cur.execute(
-                                "INSERT INTO verses (book, chapter, verse, text, translation) VALUES (?, ?, ?, ?, ?)",
-                                (book, chapter, verse, text, "WEB")
-                            )
-                        except ValueError:
-                            # Skip malformed lines
-                            continue
-        conn.commit()
-    conn.close()
-
-# ✅ Load verses at startup
-load_kjv()
-load_web()
+# ✅ Load both translations at startup
+load_translation("verses_kjv.txt", "KJV")
+load_translation("verses_web.txt", "WEB")
 
 # ---------------------------
 # Routes
