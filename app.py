@@ -94,6 +94,26 @@ def get_credits(email):
     return row[0] if row else 0
 
 # ---------------------------
+# Seed database with sample verses
+# ---------------------------
+def seed_db():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM verses")
+    count = cur.fetchone()[0]
+    if count == 0:
+        sample_verses = [
+            ("John", 3, 16, "For God so loved the world...", "KJV"),
+            ("Psalm", 23, 1, "The Lord is my shepherd; I shall not want.", "KJV"),
+            ("John", 1, 1, "In the beginning was the Word...", "WEB")
+        ]
+        cur.executemany("INSERT INTO verses (book, chapter, verse, text, translation) VALUES (?, ?, ?, ?, ?)", sample_verses)
+        conn.commit()
+    conn.close()
+
+seed_db()
+
+# ---------------------------
 # Routes
 # ---------------------------
 @app.route("/")
@@ -198,6 +218,16 @@ def search(translation):
             user_credits = get_credits(email)
 
     return render_template("search.html", results=results, translation=translation.upper(), credits=user_credits)
+
+# ✅ Verses route (for "All Verses")
+@app.route("/verses/<translation>")
+def verses(translation):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM verses WHERE translation = ?", (translation,))
+    rows = cur.fetchall()
+    conn.close()
+    return render_template("verses.html", verses=rows, translation=translation.upper())
 
 # ✅ Favorites Routes
 @app.route("/add_favorite", methods=["POST"])
