@@ -61,7 +61,7 @@ def get_db_connection():
     return conn
 
 # ---------------------------
-# Loader function (no regex)
+# Loader function (safe parsing)
 # ---------------------------
 def load_translation(filename, translation):
     conn = get_db_connection()
@@ -84,7 +84,7 @@ def load_translation(filename, translation):
                 # Verse line like [1:1] Text...
                 if line.startswith("[") and "]" in line and current_book:
                     try:
-                        header, text = line.split("]", 1)
+                        header, text = line.split("]", 1)   # split once
                         header = header.strip("[]")
                         if ":" in header:
                             chapter, verse = header.split(":")
