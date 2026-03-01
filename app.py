@@ -3,7 +3,7 @@ import sqlite3
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify, session
 
-# ✅ Load environment variables
+# Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
@@ -16,7 +16,7 @@ def init_db():
     conn = sqlite3.connect("app.db")
     cur = conn.cursor()
 
-    # Verses table
+    # Verses table (safe even if empty)
     cur.execute("""
     CREATE TABLE IF NOT EXISTS verses (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,7 +42,7 @@ def init_db():
     conn.close()
 
 # ---------------------------
-# Helper: Add credits to user
+# Helpers
 # ---------------------------
 def add_credits(email, credits):
     conn = sqlite3.connect("app.db")
@@ -78,9 +78,7 @@ def home():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        name = request.form.get("name")
         email = request.form.get("email")
-
         user = get_user(email)
         if user:
             session["user_email"] = email
@@ -118,8 +116,11 @@ def register():
 def verses():
     conn = sqlite3.connect("app.db")
     cur = conn.cursor()
-    cur.execute("SELECT book, chapter, verse, text, translation FROM verses")
-    all_verses = cur.fetchall()
+    try:
+        cur.execute("SELECT book, chapter, verse, text, translation FROM verses LIMIT 50")
+        all_verses = cur.fetchall()
+    except sqlite3.Error:
+        all_verses = []
     conn.close()
     return render_template("verses.html", verses=all_verses)
 
@@ -187,5 +188,7 @@ def nowpayments_webhook():
 # Run App
 # ---------------------------
 if __name__ == "__main__":
-    init_db()
-    app.run(debug=True)
+    if not os.path.exists("app.db"):
+        init_db()
+    # Render requires host=0.0.0.0 and PORT env var
+    app.run(debug=False, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
