@@ -10,9 +10,13 @@
 
 <!-- ✅ Verse list -->
 <ul id="versesList">
-  {% for verse in verses %}
-    <li>{{ verse|safe }}</li>
-  {% endfor %}
+  {% if verses and verses|length > 0 %}
+    {% for verse in verses %}
+      <li>{{ verse|safe }}</li>
+    {% endfor %}
+  {% else %}
+    <li>No verses available yet.</li>
+  {% endif %}
 </ul>
 
 <!-- ✅ Switch translation links -->
@@ -30,8 +34,6 @@
 
     verses.forEach(function(verse) {
       var text = verse.innerText.toLowerCase();
-
-      // ✅ Match book, chapter, and verse
       if (text.includes(filter)) {
         verse.style.display = '';
       } else {
