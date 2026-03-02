@@ -16,7 +16,7 @@ def init_db():
     conn = sqlite3.connect("app.db")
     cur = conn.cursor()
 
-    # Verses table (safe even if empty)
+    # Verses table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS verses (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -44,13 +44,6 @@ def init_db():
 # ---------------------------
 # Helpers
 # ---------------------------
-def add_credits(email, credits):
-    conn = sqlite3.connect("app.db")
-    cur = conn.cursor()
-    cur.execute("UPDATE users SET credits = credits + ? WHERE email = ?", (credits, email))
-    conn.commit()
-    conn.close()
-
 def get_user(email):
     conn = sqlite3.connect("app.db")
     cur = conn.cursor()
@@ -69,11 +62,7 @@ def index():
 
 @app.route("/home")
 def home():
-    user_email = session.get("user_email")
-    user = None
-    if user_email:
-        user = get_user(user_email)
-    return render_template("home.html", user=user)
+    return render_template("home.html")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -112,17 +101,21 @@ def register():
 
     return redirect(url_for("index"))
 
-@app.route("/verses")
-def verses():
+# ✅ Daily verse route
+@app.route("/verse/<translation>")
+def verse(translation):
+    daily = f"Daily verse placeholder for {translation}"
+    return render_template("verse.html", translation=translation, daily=daily)
+
+# ✅ All verses route
+@app.route("/verses/<translation>")
+def verses(translation):
     conn = sqlite3.connect("app.db")
     cur = conn.cursor()
-    try:
-        cur.execute("SELECT book, chapter, verse, text, translation FROM verses LIMIT 50")
-        all_verses = cur.fetchall()
-    except sqlite3.Error:
-        all_verses = []
+    cur.execute("SELECT book, chapter, verse, text, translation FROM verses WHERE translation = ?", (translation,))
+    all_verses = cur.fetchall()
     conn.close()
-    return render_template("verses.html", verses=all_verses)
+    return render_template("verses.html", translation=translation, verses=all_verses)
 
 @app.route("/credits")
 def credits():
@@ -153,42 +146,9 @@ def help():
     return render_template("help.html")
 
 # ---------------------------
-# Balance API
-# ---------------------------
-@app.route("/balance/<email>")
-def balance(email):
-    user = get_user(email)
-    if user:
-        return jsonify({"email": user[2], "credits": user[3]})
-    else:
-        return jsonify({"error": "User not found"}), 404
-
-# ---------------------------
-# NOWPayments Webhook
-# ---------------------------
-@app.route("/nowpayments-webhook", methods=["POST"])
-def nowpayments_webhook():
-    data = request.json
-    payment_status = data.get("payment_status")
-    order_id = data.get("order_id")   # e.g. CREDITS100, CREDITS250, CREDITS600
-    customer_email = data.get("customer_email")
-
-    if payment_status == "finished" and customer_email:
-        if order_id == "CREDITS100":
-            add_credits(customer_email, 100)
-        elif order_id == "CREDITS250":
-            add_credits(customer_email, 250)
-        elif order_id == "CREDITS600":
-            add_credits(customer_email, 600)
-        return jsonify({"status": "success"}), 200
-
-    return jsonify({"status": "ignored"}), 200
-
-# ---------------------------
 # Run App
 # ---------------------------
 if __name__ == "__main__":
     if not os.path.exists("app.db"):
         init_db()
-    # Render requires host=0.0.0.0 and PORT env var
     app.run(debug=False, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
