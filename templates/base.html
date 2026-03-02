@@ -34,7 +34,7 @@
       <a href="{{ url_for('verse', translation='WEB') }}">Verse (WEB)</a> |
 
       {% if session.get("user_id") %}
-        <a href="{{ url_for('favorites', user_id=session['user_id']) }}">Favorites</a> |
+        <a href="{{ url_for('favorites') }}">Favorites</a> |
         <a href="{{ url_for('logout') }}">Logout</a>
       {% else %}
         <a href="{{ url_for('login') }}">Login</a>
