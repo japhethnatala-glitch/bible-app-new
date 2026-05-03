@@ -112,6 +112,5 @@ def help():
 # Run App
 # ---------------------------
 if __name__ == "__main__":
-    if not os.path.exists("app.db"):
-        init_db()
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    init_db()  # Always initialize tables at startup
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
