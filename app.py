@@ -41,8 +41,33 @@ def init_db():
 # Routes
 # ---------------------------
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def index():
+    if request.method == "POST":
+        name = request.form.get("name")
+        email = request.form.get("email")
+
+        if not name or not email:
+            flash("Name and email are required.", "warning")
+            return redirect(url_for("index"))
+
+        conn = sqlite3.connect("app.db")
+        cur = conn.cursor()
+        try:
+            cur.execute("INSERT INTO users (name, email) VALUES (?, ?)", (name, email))
+            conn.commit()
+            flash("Registration successful!", "success")
+            # Store user in session
+            session["user_id"] = cur.lastrowid
+        except sqlite3.IntegrityError:
+            flash("Email already registered.", "danger")
+            return redirect(url_for("index"))
+        finally:
+            conn.close()
+
+        # Redirect to home after successful registration
+        return redirect(url_for("home"))
+
     return render_template("index.html")   # Registration page
 
 @app.route("/home")
