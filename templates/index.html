@@ -5,7 +5,8 @@
 </head>
 <body>
     <h2>Register</h2>
-    <form method="POST" action="/register">
+    <!-- Fix: point form to the index route -->
+    <form method="POST" action="{{ url_for('index') }}">
         <input type="text" name="name" placeholder="Name" required>
         <input type="email" name="email" placeholder="Email" required>
         <button type="submit">Register</button>
