@@ -9,7 +9,7 @@ app.secret_key = "supersecretkey"
 # Database initialization
 # ---------------------------
 def init_db():
-    conn = sqlite3.connect("app.db")
+    conn = sqlite3.connect("app.db", timeout=5)
     cur = conn.cursor()
 
     # Verses table
@@ -51,22 +51,23 @@ def index():
             flash("Name and email are required.", "warning")
             return redirect(url_for("index"))
 
-        conn = sqlite3.connect("app.db")
+        conn = sqlite3.connect("app.db", timeout=5)
         cur = conn.cursor()
         try:
             cur.execute("INSERT INTO users (name, email) VALUES (?, ?)", (name, email))
             conn.commit()
-            flash("Registration successful!", "success")
-            # Store user in session
             session["user_id"] = cur.lastrowid
+            flash("Registration successful!", "success")
+            return redirect(url_for("home"))
         except sqlite3.IntegrityError:
             flash("Email already registered.", "danger")
             return redirect(url_for("index"))
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error: {e}", "danger")
+            return redirect(url_for("index"))
         finally:
             conn.close()
-
-        # Redirect to home after successful registration
-        return redirect(url_for("home"))
 
     return render_template("index.html")   # Registration page
 
@@ -81,7 +82,7 @@ def verse(translation):
 
 @app.route("/verses/<translation>")
 def verses(translation):
-    conn = sqlite3.connect("app.db")
+    conn = sqlite3.connect("app.db", timeout=5)
     cur = conn.cursor()
     cur.execute("SELECT book, chapter, verse, text, translation FROM verses WHERE translation = ?", (translation,))
     all_verses = cur.fetchall()
