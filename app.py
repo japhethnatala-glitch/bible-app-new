@@ -60,11 +60,11 @@ def index():
             flash("Registration successful!", "success")
             return redirect(url_for("home"))
         except sqlite3.IntegrityError:
-            flash("Email already registered.", "danger")
+            flash("Email already registered. Try another.", "danger")
             return redirect(url_for("index"))
         except Exception as e:
             conn.rollback()
-            flash(f"Error: {e}", "danger")
+            flash(f"Unexpected error: {e}", "danger")
             return redirect(url_for("index"))
         finally:
             conn.close()
