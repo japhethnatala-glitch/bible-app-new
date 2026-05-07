@@ -89,6 +89,12 @@ def verses(translation):
     conn.close()
     return render_template("verses.html", translation=translation, verses=all_verses)
 
+# ✅ Added search route so home.html links work
+@app.route("/search/<translation>")
+def search(translation):
+    # Placeholder search page
+    return render_template("search.html", translation=translation)
+
 @app.route("/favorites")
 def favorites():
     if "user_id" not in session:
