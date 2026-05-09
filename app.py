@@ -1,4 +1,5 @@
-import os
+
+        import os
 import sqlite3
 from flask import Flask, render_template, request, flash, redirect, url_for, session
 
@@ -69,7 +70,7 @@ def index():
         finally:
             conn.close()
 
-    return render_template("index.html")   # Registration page
+    return render_template("index.html")
 
 @app.route("/home")
 def home():
@@ -92,7 +93,6 @@ def verses(translation):
 # ✅ Added search route so home.html links work
 @app.route("/search/<translation>")
 def search(translation):
-    # Placeholder search page
     return render_template("search.html", translation=translation)
 
 @app.route("/favorites")
@@ -144,5 +144,5 @@ def help():
 # Run App
 # ---------------------------
 if __name__ == "__main__":
-    init_db()  # Always initialize tables at startup
+    init_db()
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
