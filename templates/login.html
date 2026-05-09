@@ -1,15 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Login{% endblock %}
+{% block title %}Login | Bible App{% endblock %}
 {% block content %}
   <h1>Login</h1>
 
-  <form method="POST" action="{{ url_for('login') }}">
-      <label for="name">Name:</label><br>
-      <input type="text" name="name" id="name" placeholder="Your name"><br><br>
+  <!-- ✅ Bootstrap-styled login form -->
+  <form method="POST" action="{{ url_for('login') }}" class="mt-3">
+    <div class="mb-3">
+      <label for="email" class="form-label">Email</label>
+      <input type="email" name="email" id="email" class="form-control" placeholder="Your email" required>
+    </div>
 
-      <label for="email">Email:</label><br>
-      <input type="email" name="email" id="email" placeholder="Your email" required><br><br>
-
-      <button type="submit" class="btn btn-primary">Login</button>
+    <button type="submit" class="btn btn-primary">Login</button>
   </form>
 {% endblock %}
