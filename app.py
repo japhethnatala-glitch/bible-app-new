@@ -37,7 +37,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-# ✅ Run init_db immediately when app is imported
+# ✅ Run init_db immediately so tables exist on Render
 init_db()
 
 # ---------------------------
@@ -63,8 +63,8 @@ def index():
             flash("Registration successful!", "success")
             return redirect(url_for("home"))
         except sqlite3.IntegrityError:
-            flash("Email already registered. Try another.", "danger")
-            return redirect(url_for("index"))
+            flash("Email already registered. Please log in instead.", "danger")
+            return redirect(url_for("login"))
         except Exception as e:
             conn.rollback()
             flash(f"Unexpected error: {e}", "danger")
@@ -119,16 +119,34 @@ def search(translation):
 
     return render_template("search.html", translation=translation, results=results, credits=credits)
 
+# ✅ New login route
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form.get("email")
+
+        conn = sqlite3.connect("app.db", timeout=5)
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM users WHERE email = ?", (email,))
+        user = cur.fetchone()
+        conn.close()
+
+        if user:
+            session["user_id"] = user[0]
+            flash("Login successful!", "success")
+            return redirect(url_for("home"))
+        else:
+            flash("Email not found. Please register first.", "danger")
+            return redirect(url_for("index"))
+
+    return render_template("login.html")
+
 @app.route("/favorites")
 def favorites():
     if "user_id" not in session:
         flash("You must be logged in to view favorites.", "warning")
         return redirect(url_for("login"))
     return render_template("favorites.html", favorites=[])
-
-@app.route("/login")
-def login():
-    return render_template("login.html")
 
 @app.route("/logout")
 def logout():
