@@ -1,5 +1,4 @@
-
-        import os
+import os
 import sqlite3
 from flask import Flask, render_template, request, flash, redirect, url_for, session
 
@@ -90,10 +89,35 @@ def verses(translation):
     conn.close()
     return render_template("verses.html", translation=translation, verses=all_verses)
 
-# ✅ Added search route so home.html links work
-@app.route("/search/<translation>")
+# ✅ Fixed search route
+@app.route("/search/<translation>", methods=["GET", "POST"])
 def search(translation):
-    return render_template("search.html", translation=translation)
+    results = []
+    credits = None
+
+    if request.method == "POST":
+        keyword = request.form.get("keyword")
+        email = request.form.get("email")
+
+        conn = sqlite3.connect("app.db", timeout=5)
+        cur = conn.cursor()
+
+        # If user is logged in, fetch credits
+        if "user_id" in session:
+            cur.execute("SELECT credits FROM users WHERE id = ?", (session["user_id"],))
+            row = cur.fetchone()
+            if row:
+                credits = row[0]
+
+        # Search verses by keyword
+        if keyword:
+            cur.execute("SELECT book, chapter, verse, text FROM verses WHERE translation = ? AND text LIKE ?", (translation, f"%{keyword}%"))
+            verses_found = cur.fetchall()
+            results = [f"{book} {chapter}:{verse} - {text}" for book, chapter, verse, text in verses_found]
+
+        conn.close()
+
+    return render_template("search.html", translation=translation, results=results, credits=credits)
 
 @app.route("/favorites")
 def favorites():
