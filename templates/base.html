@@ -37,7 +37,8 @@
         <a href="{{ url_for('favorites') }}">Favorites</a> |
         <a href="{{ url_for('logout') }}">Logout</a>
       {% else %}
-        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('login') }}">Login</a> |
+        <a href="{{ url_for('index') }}">Register</a>
       {% endif %}
 
       <button id="darkModeToggle" class="btn btn-sm btn-secondary ms-2">🌙</button>
