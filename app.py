@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from flask import Flask, render_template, request, flash, redirect, url_for, session
+from flask import Flask, render_template, request, flash, redirect, url_for, session, g
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
@@ -51,6 +51,21 @@ def init_db():
 
 # ✅ Run init_db immediately so tables exist on Render
 init_db()
+
+# ---------------------------
+# Load credits globally
+# ---------------------------
+@app.before_request
+def load_user_credits():
+    g.credits = None
+    if "user_id" in session:
+        conn = sqlite3.connect("app.db", timeout=5)
+        cur = conn.cursor()
+        cur.execute("SELECT credits FROM users WHERE id = ?", (session["user_id"],))
+        row = cur.fetchone()
+        conn.close()
+        if row:
+            g.credits = row[0]
 
 # ---------------------------
 # Routes
@@ -107,20 +122,12 @@ def verses(translation):
 @app.route("/search/<translation>", methods=["GET", "POST"])
 def search(translation):
     results = []
-    credits = None
 
     if request.method == "POST":
         keyword = request.form.get("keyword")
-        email = request.form.get("email")
 
         conn = sqlite3.connect("app.db", timeout=5)
         cur = conn.cursor()
-
-        if "user_id" in session:
-            cur.execute("SELECT credits FROM users WHERE id = ?", (session["user_id"],))
-            row = cur.fetchone()
-            if row:
-                credits = row[0]
 
         if keyword:
             cur.execute("SELECT book, chapter, verse, text FROM verses WHERE translation = ? AND text LIKE ?", (translation, f"%{keyword}%"))
@@ -129,7 +136,7 @@ def search(translation):
 
         conn.close()
 
-    return render_template("search.html", translation=translation, results=results, credits=credits)
+    return render_template("search.html", translation=translation, results=results)
 
 # ✅ Save verse route
 @app.route("/save/<int:verse_id>/<translation>", methods=["POST"])
@@ -211,6 +218,29 @@ def logout():
 @app.route("/credits")
 def credits():
     return render_template("credits.html")
+
+# ✅ Payment callback route
+@app.route("/payment_callback", methods=["POST"])
+def payment_callback():
+    data = request.json
+
+    email = data.get("order_description")   # pass user email in description
+    amount = float(data.get("price_amount", 0))
+
+    credits_to_add = 0
+    if amount == 5:
+        credits_to_add = 50
+    elif amount == 10:
+        credits_to_add = 120
+
+    if credits_to_add > 0 and email:
+        conn = sqlite3.connect("app.db", timeout=5)
+        cur = conn.cursor()
+        cur.execute("UPDATE users SET credits = credits + ? WHERE email = ?", (credits_to_add, email))
+        conn.commit()
+        conn.close()
+
+    return {"status": "success"}, 200
 
 @app.route("/about")
 def about():
