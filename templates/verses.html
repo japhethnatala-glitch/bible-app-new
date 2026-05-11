@@ -3,12 +3,24 @@
 {% block content %}
 <h1>All Verses - {{ translation }}</h1>
 
+<!-- ✅ Show credits balance -->
+{% if g.credits is not none %}
+  <p><strong>Your Credits:</strong> {{ g.credits }}</p>
+{% endif %}
+
 <input type="text" id="verseSearch" placeholder="Search by book, chapter, or verse..." class="form-control mb-3">
 
 <ul id="versesList">
   {% if verses and verses|length > 0 %}
-    {% for book, chapter, verse, text, trans in verses %}
-      <li>{{ book }} {{ chapter }}:{{ verse }} - {{ text }} ({{ trans }})</li>
+    {% for id, book, chapter, verse, text, trans in verses %}
+      <li>
+        {{ book }} {{ chapter }}:{{ verse }} - {{ text }} ({{ trans }})
+
+        <!-- ✅ Save button (deducts 1 credit) -->
+        <form method="POST" action="{{ url_for('save_verse', verse_id=id, translation=translation) }}" style="display:inline;">
+          <button type="submit" class="btn btn-sm btn-success">💾 Save</button>
+        </form>
+      </li>
     {% endfor %}
   {% else %}
     <li>No verses available yet.</li>
