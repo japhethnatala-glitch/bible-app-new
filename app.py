@@ -34,6 +34,18 @@ def init_db():
     )
     """)
 
+    # Saved verses table
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS saved_verses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        verse_id INTEGER,
+        translation TEXT,
+        FOREIGN KEY(user_id) REFERENCES users(id),
+        FOREIGN KEY(verse_id) REFERENCES verses(id)
+    )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -87,7 +99,7 @@ def verse(translation):
 def verses(translation):
     conn = sqlite3.connect("app.db", timeout=5)
     cur = conn.cursor()
-    cur.execute("SELECT book, chapter, verse, text, translation FROM verses WHERE translation = ?", (translation,))
+    cur.execute("SELECT id, book, chapter, verse, text, translation FROM verses WHERE translation = ?", (translation,))
     all_verses = cur.fetchall()
     conn.close()
     return render_template("verses.html", translation=translation, verses=all_verses)
@@ -119,7 +131,37 @@ def search(translation):
 
     return render_template("search.html", translation=translation, results=results, credits=credits)
 
-# ✅ New login route
+# ✅ Save verse route
+@app.route("/save/<int:verse_id>/<translation>", methods=["POST"])
+def save_verse(verse_id, translation):
+    if "user_id" not in session:
+        flash("Please log in to save verses.", "warning")
+        return redirect(url_for("login"))
+
+    conn = sqlite3.connect("app.db", timeout=5)
+    cur = conn.cursor()
+
+    # Check credits
+    cur.execute("SELECT credits FROM users WHERE id = ?", (session["user_id"],))
+    row = cur.fetchone()
+    if not row or row[0] <= 0:
+        flash("Not enough credits. Please buy more.", "danger")
+        conn.close()
+        return redirect(url_for("credits"))
+
+    # Deduct 1 credit
+    cur.execute("UPDATE users SET credits = credits - 1 WHERE id = ?", (session["user_id"],))
+
+    # Save verse
+    cur.execute("INSERT INTO saved_verses (user_id, verse_id, translation) VALUES (?, ?, ?)",
+                (session["user_id"], verse_id, translation))
+    conn.commit()
+    conn.close()
+
+    flash("Verse saved successfully!", "success")
+    return redirect(url_for("favorites"))
+
+# ✅ Login route
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -146,7 +188,19 @@ def favorites():
     if "user_id" not in session:
         flash("You must be logged in to view favorites.", "warning")
         return redirect(url_for("login"))
-    return render_template("favorites.html", favorites=[])
+
+    conn = sqlite3.connect("app.db", timeout=5)
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT verses.book, verses.chapter, verses.verse, verses.text
+        FROM saved_verses
+        JOIN verses ON saved_verses.verse_id = verses.id
+        WHERE saved_verses.user_id = ?
+    """, (session["user_id"],))
+    favorites = cur.fetchall()
+    conn.close()
+
+    return render_template("favorites.html", favorites=favorites)
 
 @app.route("/logout")
 def logout():
