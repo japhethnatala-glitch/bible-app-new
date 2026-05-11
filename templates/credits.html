@@ -8,17 +8,35 @@
 
 <h2>How Credits Work</h2>
 <ul>
-  <li>You earn credits each time you perform a search.</li>
+  <li>You spend <strong>1 credit</strong> each time you save a verse.</li>
   <li>Credits can unlock additional features in the app.</li>
   <li>Credits are virtual points — they are not real money and cannot be withdrawn or transferred.</li>
 </ul>
 
 <h2>Your Balance</h2>
-{% if credits is not none %}
-  <p>You currently have <strong>{{ credits }}</strong> credits.</p>
+{% if g.credits is not none %}
+  <p>You currently have <strong>{{ g.credits }}</strong> credits.</p>
 {% else %}
-  <p>Enter your email during searches to track your credits.</p>
+  <p>Please log in to see your credits balance.</p>
 {% endif %}
+
+<h2>Buy More Credits</h2>
+<p>Purchase credits securely using NOWPayments:</p>
+
+<!-- ✅ Example NOWPayments buttons -->
+<div class="buy-credits">
+  <form action="https://nowpayments.io/payment" method="POST">
+    <input type="hidden" name="amount" value="5">
+    <input type="hidden" name="description" value="Buy 50 Credits">
+    <button type="submit" class="btn btn-primary">Buy 50 Credits ($5)</button>
+  </form>
+
+  <form action="https://nowpayments.io/payment" method="POST">
+    <input type="hidden" name="amount" value="10">
+    <input type="hidden" name="description" value="Buy 120 Credits">
+    <button type="submit" class="btn btn-success">Buy 120 Credits ($10)</button>
+  </form>
+</div>
 
 <h2>Why Credits?</h2>
 <p>Credits encourage regular study and exploration of scripture. They also help us personalize your experience in the app.</p>
