@@ -1,32 +1,66 @@
 import sqlite3
+import json
 
-# Connect to SQLite database (creates app.db if it doesn't exist)
-conn = sqlite3.connect("app.db")
-cur = conn.cursor()
+# ---------------------------
+# Database setup
+# ---------------------------
+def setup_db():
+    conn = sqlite3.connect("app.db")
+    cur = conn.cursor()
 
-# Users table: stores name, email, and credits
-cur.execute("""
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT,
-    email TEXT UNIQUE,
-    credits INTEGER DEFAULT 0
-)
-""")
+    # Users table
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        email TEXT UNIQUE,
+        credits INTEGER DEFAULT 0
+    )
+    """)
 
-# Verses table: optional, if you want to move verses from .txt into DB
-cur.execute("""
-CREATE TABLE IF NOT EXISTS verses (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    book TEXT,
-    chapter INTEGER,
-    verse INTEGER,
-    text TEXT,
-    translation TEXT
-)
-""")
+    # Verses table
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS verses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        book TEXT,
+        chapter INTEGER,
+        verse INTEGER,
+        text TEXT,
+        translation TEXT
+    )
+    """)
 
-conn.commit()
-conn.close()
+    conn.commit()
+    conn.close()
+    print("Database setup complete! Tables created.")
 
-print("Database setup complete! Tables created.")
+# ---------------------------
+# Load verses from JSON
+# ---------------------------
+def load_json(file_path, translation):
+    conn = sqlite3.connect("app.db")
+    cur = conn.cursor()
+
+    with open(file_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    for book, chapters in data.items():
+        for chapter, verses in chapters.items():
+            for verse, text in verses.items():
+                cur.execute("""
+                    INSERT INTO verses (book, chapter, verse, text, translation)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (book, int(chapter), int(verse), text, translation))
+
+    conn.commit()
+    conn.close()
+    print(f"{translation} verses loaded successfully!")
+
+# ---------------------------
+# Run setup + load
+# ---------------------------
+if __name__ == "__main__":
+    setup_db()
+    load_json("verses.kjv.json", "KJV")
+    load_json("verses.web.json", "WEB")
+    print("All data imported successfully!")
