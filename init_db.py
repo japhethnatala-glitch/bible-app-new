@@ -1,14 +1,9 @@
-import sqlite3
-import json
+import sqlite3, json
 
-# ---------------------------
-# Database setup
-# ---------------------------
 def setup_db():
     conn = sqlite3.connect("app.db")
     cur = conn.cursor()
 
-    # Users table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,7 +13,6 @@ def setup_db():
     )
     """)
 
-    # Verses table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS verses (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,9 +28,6 @@ def setup_db():
     conn.close()
     print("Database setup complete! Tables created.")
 
-# ---------------------------
-# Load verses from JSON
-# ---------------------------
 def load_json(file_path, translation):
     conn = sqlite3.connect("app.db")
     cur = conn.cursor()
@@ -56,9 +47,6 @@ def load_json(file_path, translation):
     conn.close()
     print(f"{translation} verses loaded successfully!")
 
-# ---------------------------
-# Run setup + load
-# ---------------------------
 if __name__ == "__main__":
     setup_db()
     load_json("verses.kjv.json", "KJV")
