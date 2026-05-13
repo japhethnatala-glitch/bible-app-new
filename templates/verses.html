@@ -14,7 +14,7 @@
   {% if verses and verses|length > 0 %}
     {% set current_book = None %}
     {% set current_chapter = None %}
-    {% for id, book, chapter, verse, text, trans in verses %}
+    {% for id, book, chapter, verse, text, translation in verses %}
       
       <!-- ✅ Book heading -->
       {% if book != current_book %}
@@ -30,7 +30,7 @@
       {% endif %}
 
       <li>
-        <strong>{{ chapter }}:{{ verse }}</strong> - {{ text }} ({{ trans }})
+        <strong>{{ chapter }}:{{ verse }}</strong> - {{ text }} ({{ translation }})
 
         <!-- ✅ Save button (deducts 1 credit) -->
         <form method="POST" action="{{ url_for('save_verse', verse_id=id, translation=translation) }}" style="display:inline;">
