@@ -192,3 +192,22 @@ footer {
 body.dark-mode footer {
     color: #ccc;
 }
+
+/* Floating Save Button */
+.save-button {
+    position: fixed;       /* stays in place */
+    bottom: 20px;          /* distance from bottom */
+    right: 20px;           /* distance from right */
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 1000;         /* ensures it stays above text */
+}
+
+.save-button:hover {
+    background-color: #45a049;
+}
