@@ -205,6 +205,23 @@ def debug_verses(translation):
     return f"Total verses: {result[0]}, First book: {result[1]}, Last book: {result[2]}"
 
 # ✅ Add missing routes so base.html links don’t break
+@app.route("/favorites")
+def favorites():
+    if "user_id" not in session:
+        flash("You must be logged in to view favorites.", "warning")
+        return redirect(url_for("login"))
+    conn = sqlite3.connect("app.db", timeout=5)
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT verses.book, verses.chapter, verses.verse, verses.text
+        FROM saved_verses
+        JOIN verses ON saved_verses.verse_id = verses.id
+        WHERE saved_verses.user_id = ?
+    """, (session["user_id"],))
+    favorites = cur.fetchall()
+    conn.close()
+    return render_template("favorites.html", favorites=favorites)
+
 @app.route("/about")
 def about():
     return render_template("about.html")
