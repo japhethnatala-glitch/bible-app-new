@@ -12,9 +12,25 @@
 
 <ul id="versesList">
   {% if verses and verses|length > 0 %}
+    {% set current_book = None %}
+    {% set current_chapter = None %}
     {% for id, book, chapter, verse, text, trans in verses %}
+      
+      <!-- ✅ Book heading -->
+      {% if book != current_book %}
+        <h2>{{ book }}</h2>
+        {% set current_book = book %}
+        {% set current_chapter = None %}
+      {% endif %}
+      
+      <!-- ✅ Chapter heading -->
+      {% if chapter != current_chapter %}
+        <h3>Chapter {{ chapter }}</h3>
+        {% set current_chapter = chapter %}
+      {% endif %}
+
       <li>
-        {{ book }} {{ chapter }}:{{ verse }} - {{ text }} ({{ trans }})
+        <strong>{{ chapter }}:{{ verse }}</strong> - {{ text }} ({{ trans }})
 
         <!-- ✅ Save button (deducts 1 credit) -->
         <form method="POST" action="{{ url_for('save_verse', verse_id=id, translation=translation) }}" style="display:inline;">
