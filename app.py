@@ -110,7 +110,6 @@ def verse(translation):
     daily = f"Daily verse placeholder for {translation}"
     return render_template("verse.html", translation=translation, daily=daily)
 
-# ✅ Updated Verses Route with proper book order
 @app.route("/verses/<translation>")
 def verses(translation):
     conn = sqlite3.connect("app.db", timeout=5)
@@ -195,6 +194,10 @@ def verses(translation):
     return render_template("verses.html", translation=translation, verses=all_verses)
 
 # ✅ Debugging route
+@app.route("/debug/routes")
+def debug_routes():
+    return str(app.url_map)
+
 @app.route("/debug/verses/<translation>")
 def debug_verses(translation):
     conn = sqlite3.connect("app.db", timeout=5)
@@ -221,6 +224,12 @@ def favorites():
     favorites = cur.fetchall()
     conn.close()
     return render_template("favorites.html", favorites=favorites)
+
+@app.route("/logout")
+def logout():
+    session.pop("user_id", None)
+    flash("You have been logged out.", "info")
+    return redirect(url_for("index"))
 
 @app.route("/about")
 def about():
