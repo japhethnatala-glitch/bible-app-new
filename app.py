@@ -194,8 +194,40 @@ def verses(translation):
     conn.close()
     return render_template("verses.html", translation=translation, verses=all_verses)
 
-# ✅ The rest of your routes remain unchanged...
-# (search, save_verse, login, favorites, logout, credits, payment_callback, about, contact, faq, privacy, terms, help)
+# ✅ Debugging route
+@app.route("/debug/verses/<translation>")
+def debug_verses(translation):
+    conn = sqlite3.connect("app.db", timeout=5)
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*), MIN(book), MAX(book) FROM verses WHERE translation = ?", (translation,))
+    result = cur.fetchone()
+    conn.close()
+    return f"Total verses: {result[0]}, First book: {result[1]}, Last book: {result[2]}"
+
+# ✅ Add missing routes so base.html links don’t break
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
+
+@app.route("/faq")
+def faq():
+    return render_template("faq.html")
+
+@app.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
+
+@app.route("/terms")
+def terms():
+    return render_template("terms.html")
+
+@app.route("/help")
+def help():
+    return render_template("help.html")
 
 # ---------------------------
 # Run App
