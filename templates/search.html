@@ -7,32 +7,38 @@
 <p>Enter a keyword to search verses:</p>
 
 <!-- ✅ Search form -->
-<form method="POST">
-  <label for="keyword">Keyword</label>
-  <input type="text" id="keyword" name="keyword" placeholder="e.g. faith, love, hope">
+<form method="POST" class="mb-3">
+  <div class="mb-2">
+    <label for="keyword" class="form-label">Keyword</label>
+    <input type="text" id="keyword" name="keyword" class="form-control" placeholder="e.g. faith, love, hope">
+  </div>
 
-  <label for="email">Email (optional)</label>
-  <input type="email" id="email" name="email" placeholder="Your email">
+  <div class="mb-2">
+    <label for="email" class="form-label">Email (optional)</label>
+    <input type="email" id="email" name="email" class="form-control" placeholder="Your email">
+  </div>
 
-  <button type="submit">Search</button>
+  <button type="submit" class="btn btn-primary">Search</button>
 </form>
 
 <!-- ✅ Show credits if available -->
 {% if credits is not none %}
-  <p class="mt-3">Your credits: {{ credits }}</p>
+  <p class="mt-3 fw-bold">Your credits: {{ credits }}</p>
 {% endif %}
 
 <!-- ✅ Results list -->
 {% if results %}
   <h2>Results</h2>
-  <ul>
-    {% for r in results %}
-      <li>{{ r|safe }}</li>
-    {% endfor %}
-  </ul>
+  <div style="max-height:500px; overflow-y:auto;">
+    <ul class="list-group">
+      {% for r in results %}
+        <li class="list-group-item">{{ r|safe }}</li>
+      {% endfor %}
+    </ul>
+  </div>
 {% else %}
   {% if request.method == 'POST' %}
-    <p>No results found for your search.</p>
+    <p class="text-danger">No results found for your search.</p>
   {% endif %}
 {% endif %}
 {% endblock %}
