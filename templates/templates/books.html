@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Books - {{ translation }}{% endblock %}
+{% block content %}
+<h2>Select a Book ({{ translation }})</h2>
+<ul>
+  {% for book in books %}
+    <li><a href="{{ url_for('chapters', translation=translation, book=book) }}">{{ book }}</a></li>
+  {% endfor %}
+</ul>
+{% endblock %}
