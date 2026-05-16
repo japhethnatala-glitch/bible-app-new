@@ -1,19 +1,26 @@
 {% extends "base.html" %}
 {% block title %}My Favorites{% endblock %}
+
 {% block content %}
   <h1>Saved Favorites</h1>
 
+  <!-- ✅ Show credits if available -->
+  {% if credits is not none %}
+    <p class="fw-bold">Your credits: {{ credits }}</p>
+  {% endif %}
+
   {% if favorites %}
-      <ul>
-          {% for fav in favorites %}
-              <li>
-                  <strong>{{ fav['book'] }} {{ fav['chapter'] }}:{{ fav['verse'] }}</strong><br>
-                  "{{ fav['text'] }}" <em>({{ fav['translation'] }})</em><br>
-                  <small>Saved on {{ fav['created_at'] }}</small>
-              </li>
-          {% endfor %}
+    <div style="max-height:500px; overflow-y:auto;">
+      <ul class="list-group">
+        {% for fav in favorites %}
+          <li class="list-group-item">
+            <strong>{{ fav[0] }} {{ fav[1] }}:{{ fav[2] }}</strong><br>
+            "{{ fav[3] }}" <em>({{ translation }})</em>
+          </li>
+        {% endfor %}
       </ul>
+    </div>
   {% else %}
-      <p>You have no favorites saved yet.</p>
+    <p class="text-muted">You have no favorites saved yet.</p>
   {% endif %}
 {% endblock %}
