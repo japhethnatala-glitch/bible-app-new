@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Chapters - {{ book }}{% endblock %}
+{% block content %}
+<h2>{{ book }} ({{ translation }})</h2>
+<ul>
+  {% for chap in chapters %}
+    <li><a href="{{ url_for('chapter', translation=translation, book=book, chapter=chap) }}">Chapter {{ chap }}</a></li>
+  {% endfor %}
+</ul>
+<a href="{{ url_for('books', translation=translation) }}" class="btn btn-secondary mt-3">⬅ Back to Books</a>
+{% endblock %}
