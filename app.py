@@ -131,7 +131,7 @@ def search(translation):
             verses_found = cur.fetchall()
             results = [f"{book} {chapter}:{verse} - {text}" for book, chapter, verse, text in verses_found]
         conn.close()
-    return render_template("search.html", translation=translation, results=results)
+    return render_template("search.html", translation=translation, results=results, credits=g.credits)
 
 @app.route("/save/<int:verse_id>/<translation>", methods=["POST"])
 def save_verse(verse_id, translation):
@@ -188,14 +188,14 @@ def favorites():
     conn = sqlite3.connect("app.db", timeout=5)
     cur = conn.cursor()
     cur.execute("""
-        SELECT verses.book, verses.chapter, verses.verse, verses.text
+        SELECT verses.book, verses.chapter, verses.verse, verses.text, verses.translation
         FROM saved_verses
         JOIN verses ON saved_verses.verse_id = verses.id
         WHERE saved_verses.user_id = ?
     """, (session["user_id"],))
     favorites = cur.fetchall()
     conn.close()
-    return render_template("favorites.html", favorites=favorites)
+    return render_template("favorites.html", favorites=favorites, credits=g.credits)
 
 @app.route("/logout")
 def logout():
@@ -269,5 +269,5 @@ def debug_verses(translation):
 # Run App
 # ---------------------------
 if __name__ == "__main__":
-    # ✅ Only run Flask’s dev server locally
+    # ✅ Only run Flask locally; Render uses Gunicorn
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
