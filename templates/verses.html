@@ -30,11 +30,11 @@
       {% endif %}
 
       <li>
-        <strong>{{ chapter }}:{{ verse }}</strong> - {{ text }} ({{ translation }})
+        <span class="verse-text"><strong>{{ chapter }}:{{ verse }}</strong> - {{ text }} ({{ translation }})</span>
 
-        <!-- ✅ Save button (deducts 1 credit) -->
-        <form method="POST" action="{{ url_for('save_verse', verse_id=id, translation=translation) }}" style="display:inline;">
-          <button type="submit" class="btn btn-sm btn-success">💾 Save</button>
+        <!-- ✅ Save button aligned right -->
+        <form method="POST" action="{{ url_for('save_verse', verse_id=id, translation=translation) }}" class="save-form">
+          <button type="submit" class="save-btn">💾 Save</button>
         </form>
       </li>
     {% endfor %}
