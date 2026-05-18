@@ -105,12 +105,28 @@ def index():
 def home():
     return render_template("home.html")
 
-# ✅ Books → Chapters → Verses navigation
+@app.route("/verse/<translation>")
+def verse(translation):
+    daily = f"Daily verse placeholder for {translation}"
+    return render_template("verse.html", translation=translation, daily=daily)
+
+@app.route("/verses/<translation>")
+def verses(translation):
+    conn = sqlite3.connect("app.db", timeout=5)
+    cur = conn.cursor()
+    cur.execute("SELECT id, book, chapter, verse, text, translation FROM verses WHERE translation = ?", (translation,))
+    all_verses = cur.fetchall()
+    conn.close()
+    return render_template("verses.html", translation=translation, verses=all_verses, credits=g.credits)
+
+# ---------------------------
+# Books -> Chapters -> Chapter (verses) navigation
+# ---------------------------
 @app.route("/books/<translation>")
 def books(translation):
     conn = sqlite3.connect("app.db", timeout=5)
     cur = conn.cursor()
-    cur.execute("SELECT DISTINCT book FROM verses WHERE translation = ?", (translation,))
+    cur.execute("SELECT DISTINCT book FROM verses WHERE translation = ? ORDER BY book", (translation,))
     books = [row[0] for row in cur.fetchall()]
     conn.close()
     return render_template("books.html", translation=translation, books=books, credits=g.credits)
@@ -119,7 +135,7 @@ def books(translation):
 def chapters(translation, book):
     conn = sqlite3.connect("app.db", timeout=5)
     cur = conn.cursor()
-    cur.execute("SELECT DISTINCT chapter FROM verses WHERE translation = ? AND book = ?", (translation, book))
+    cur.execute("SELECT DISTINCT chapter FROM verses WHERE translation = ? AND book = ? ORDER BY chapter", (translation, book))
     chapters = [row[0] for row in cur.fetchall()]
     conn.close()
     return render_template("chapters.html", translation=translation, book=book, chapters=chapters, credits=g.credits)
@@ -128,12 +144,15 @@ def chapters(translation, book):
 def chapter(translation, book, chapter):
     conn = sqlite3.connect("app.db", timeout=5)
     cur = conn.cursor()
-    cur.execute("SELECT id, verse, text FROM verses WHERE translation = ? AND book = ? AND chapter = ?",
+    cur.execute("SELECT id, verse, text FROM verses WHERE translation = ? AND book = ? AND chapter = ? ORDER BY verse",
                 (translation, book, chapter))
     verses = cur.fetchall()
     conn.close()
     return render_template("chapter.html", translation=translation, book=book, chapter=chapter, verses=verses, credits=g.credits)
 
+# ---------------------------
+# Search
+# ---------------------------
 @app.route("/search/<translation>", methods=["GET", "POST"])
 def search(translation):
     results = []
@@ -142,12 +161,17 @@ def search(translation):
         conn = sqlite3.connect("app.db", timeout=5)
         cur = conn.cursor()
         if keyword:
-            cur.execute("SELECT book, chapter, verse, text FROM verses WHERE translation = ? AND text LIKE ?", (translation, f"%{keyword}%"))
+            # Use parameterized LIKE for fast DB search
+            cur.execute("SELECT book, chapter, verse, text FROM verses WHERE translation = ? AND text LIKE ? ORDER BY book, chapter, verse",
+                        (translation, f"%{keyword}%"))
             verses_found = cur.fetchall()
             results = [f"{book} {chapter}:{verse} - {text}" for book, chapter, verse, text in verses_found]
         conn.close()
     return render_template("search.html", translation=translation, results=results, credits=g.credits)
 
+# ---------------------------
+# Save verse (deduct credits)
+# ---------------------------
 @app.route("/save/<int:verse_id>/<translation>", methods=["POST"])
 def save_verse(verse_id, translation):
     if "user_id" not in session:
@@ -157,6 +181,7 @@ def save_verse(verse_id, translation):
     conn = sqlite3.connect("app.db", timeout=5)
     cur = conn.cursor()
 
+    # Check credits
     cur.execute("SELECT credits FROM users WHERE id = ?", (session["user_id"],))
     row = cur.fetchone()
     if not row or row[0] <= 0:
@@ -164,7 +189,10 @@ def save_verse(verse_id, translation):
         conn.close()
         return redirect(url_for("credits"))
 
+    # Deduct 1 credit
     cur.execute("UPDATE users SET credits = credits - 1 WHERE id = ?", (session["user_id"],))
+
+    # Save verse
     cur.execute("INSERT INTO saved_verses (user_id, verse_id, translation) VALUES (?, ?, ?)",
                 (session["user_id"], verse_id, translation))
     conn.commit()
@@ -173,6 +201,9 @@ def save_verse(verse_id, translation):
     flash("Verse saved successfully!", "success")
     return redirect(url_for("favorites"))
 
+# ---------------------------
+# Auth and favorites
+# ---------------------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -203,6 +234,7 @@ def favorites():
         FROM saved_verses
         JOIN verses ON saved_verses.verse_id = verses.id
         WHERE saved_verses.user_id = ?
+        ORDER BY verses.book, verses.chapter, verses.verse
     """, (session["user_id"],))
     favorites = cur.fetchall()
     conn.close()
@@ -218,6 +250,9 @@ def logout():
 def credits():
     return render_template("credits.html")
 
+# ---------------------------
+# Payment callback
+# ---------------------------
 @app.route("/payment_callback", methods=["POST"])
 def payment_callback():
     data = request.json
@@ -235,6 +270,33 @@ def payment_callback():
         conn.commit()
         conn.close()
     return {"status": "success"}, 200
+
+# ---------------------------
+# Static pages
+# ---------------------------
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
+
+@app.route("/faq")
+def faq():
+    return render_template("faq.html")
+
+@app.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
+
+@app.route("/terms")
+def terms():
+    return render_template("terms.html")
+
+@app.route("/help")
+def help():
+    return render_template("help.html")
 
 # ---------------------------
 # Debugging helpers
@@ -256,12 +318,7 @@ def debug_verses(translation):
 # Run App
 # ---------------------------
 if __name__ == "__main__":
-    # ✅ Only run Flask locally; Render uses Gunicorn
-    # ---------------------------
-# Run App
-# ---------------------------
-if __name__ == "__main__":
-    # ✅ Only run Flask locally; Render uses Gunicorn in production
+    # Run Flask locally; in production use: gunicorn app:app
     app.run(
         debug=True,
         host="0.0.0.0",
