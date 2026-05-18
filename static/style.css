@@ -64,11 +64,37 @@ li {
     padding: 8px;
     margin-bottom: 5px;
     border-radius: 4px;
+
+    /* ✅ Flexbox for text + button alignment */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 body.dark-mode li {
     background: #1e1e1e;
     border: 1px solid #444;
+}
+
+/* Verse text */
+.verse-text {
+    flex: 1;
+    margin-right: 10px;
+}
+
+/* Save button inside verse */
+.save-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.save-btn:hover {
+    background-color: #45a049;
 }
 
 /* Daily verse highlight */
@@ -137,7 +163,7 @@ textarea {
     resize: vertical;
 }
 
-/* Button */
+/* Button (general) */
 button {
     padding: 10px 15px;
     background-color: #007BFF;
@@ -191,23 +217,4 @@ footer {
 
 body.dark-mode footer {
     color: #ccc;
-}
-
-/* Floating Save Button */
-.save-button {
-    position: fixed;       /* stays in place */
-    bottom: 20px;          /* distance from bottom */
-    right: 20px;           /* distance from right */
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    z-index: 1000;         /* ensures it stays above text */
-}
-
-.save-button:hover {
-    background-color: #45a049;
 }
