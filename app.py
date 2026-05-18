@@ -105,19 +105,34 @@ def index():
 def home():
     return render_template("home.html")
 
-@app.route("/verse/<translation>")
-def verse(translation):
-    daily = f"Daily verse placeholder for {translation}"
-    return render_template("verse.html", translation=translation, daily=daily)
-
-@app.route("/verses/<translation>")
-def verses(translation):
+# ✅ Books → Chapters → Verses navigation
+@app.route("/books/<translation>")
+def books(translation):
     conn = sqlite3.connect("app.db", timeout=5)
     cur = conn.cursor()
-    cur.execute("SELECT id, book, chapter, verse, text, translation FROM verses WHERE translation = ?", (translation,))
-    all_verses = cur.fetchall()
+    cur.execute("SELECT DISTINCT book FROM verses WHERE translation = ?", (translation,))
+    books = [row[0] for row in cur.fetchall()]
     conn.close()
-    return render_template("verses.html", translation=translation, verses=all_verses)
+    return render_template("books.html", translation=translation, books=books, credits=g.credits)
+
+@app.route("/chapters/<translation>/<book>")
+def chapters(translation, book):
+    conn = sqlite3.connect("app.db", timeout=5)
+    cur = conn.cursor()
+    cur.execute("SELECT DISTINCT chapter FROM verses WHERE translation = ? AND book = ?", (translation, book))
+    chapters = [row[0] for row in cur.fetchall()]
+    conn.close()
+    return render_template("chapters.html", translation=translation, book=book, chapters=chapters, credits=g.credits)
+
+@app.route("/chapter/<translation>/<book>/<int:chapter>")
+def chapter(translation, book, chapter):
+    conn = sqlite3.connect("app.db", timeout=5)
+    cur = conn.cursor()
+    cur.execute("SELECT id, verse, text FROM verses WHERE translation = ? AND book = ? AND chapter = ?",
+                (translation, book, chapter))
+    verses = cur.fetchall()
+    conn.close()
+    return render_template("chapter.html", translation=translation, book=book, chapter=chapter, verses=verses, credits=g.credits)
 
 @app.route("/search/<translation>", methods=["GET", "POST"])
 def search(translation):
@@ -142,7 +157,6 @@ def save_verse(verse_id, translation):
     conn = sqlite3.connect("app.db", timeout=5)
     cur = conn.cursor()
 
-    # Check credits
     cur.execute("SELECT credits FROM users WHERE id = ?", (session["user_id"],))
     row = cur.fetchone()
     if not row or row[0] <= 0:
@@ -150,10 +164,7 @@ def save_verse(verse_id, translation):
         conn.close()
         return redirect(url_for("credits"))
 
-    # Deduct 1 credit
     cur.execute("UPDATE users SET credits = credits - 1 WHERE id = ?", (session["user_id"],))
-
-    # Save verse
     cur.execute("INSERT INTO saved_verses (user_id, verse_id, translation) VALUES (?, ?, ?)",
                 (session["user_id"], verse_id, translation))
     conn.commit()
@@ -225,30 +236,6 @@ def payment_callback():
         conn.close()
     return {"status": "success"}, 200
 
-@app.route("/about")
-def about():
-    return render_template("about.html")
-
-@app.route("/contact")
-def contact():
-    return render_template("contact.html")
-
-@app.route("/faq")
-def faq():
-    return render_template("faq.html")
-
-@app.route("/privacy")
-def privacy():
-    return render_template("privacy.html")
-
-@app.route("/terms")
-def terms():
-    return render_template("terms.html")
-
-@app.route("/help")
-def help():
-    return render_template("help.html")
-
 # ---------------------------
 # Debugging helpers
 # ---------------------------
@@ -270,4 +257,13 @@ def debug_verses(translation):
 # ---------------------------
 if __name__ == "__main__":
     # ✅ Only run Flask locally; Render uses Gunicorn
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    # ---------------------------
+# Run App
+# ---------------------------
+if __name__ == "__main__":
+    # ✅ Only run Flask locally; Render uses Gunicorn in production
+    app.run(
+        debug=True,
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000))
+    )
