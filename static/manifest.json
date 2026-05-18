@@ -1,10 +1,10 @@
 {
-  "name": "Bible App",
-  "short_name": "BibleApp",
+  "name": "LifeVerse Bible",
+  "short_name": "LifeVerse",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#4a90e2",
+  "theme_color": "#ff4500",
   "icons": [
     {
       "src": "/static/icons/icon-192.png",
@@ -15,6 +15,11 @@
       "src": "/static/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
+    },
+    {
+      "src": "/static/icons/favicon.ico",
+      "sizes": "16x16 32x32 48x48",
+      "type": "image/x-icon"
     }
   ]
 }
