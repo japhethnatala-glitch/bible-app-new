@@ -5,8 +5,15 @@
 
 <!-- ✅ Show credits balance -->
 {% if g.credits is not none %}
-  <p><strong>Your Credits:</strong> {{ g.credits }}</p>
+  <p><strong>Your Credits:</strong> <span id="creditsDisplay">{{ g.credits }}</span></p>
 {% endif %}
+
+<!-- ✅ Highlight / Underline / Erase toolbar -->
+<div class="toolbar mb-3">
+  <button id="highlightBtn" class="btn btn-warning btn-sm">🖍 Highlight</button>
+  <button id="underlineBtn" class="btn btn-primary btn-sm">〰️ Underline</button>
+  <button id="eraseBtn" class="btn btn-danger btn-sm">🧽 Erase</button>
+</div>
 
 <input type="text" id="verseSearch" placeholder="Search by book, chapter, or verse..." class="form-control mb-3">
 
@@ -30,7 +37,9 @@
       {% endif %}
 
       <li>
-        <span class="verse-text"><strong>{{ chapter }}:{{ verse }}</strong> - {{ text }} ({{ translation }})</span>
+        <span class="verse-text verse" data-id="{{ id }}">
+          <strong>{{ chapter }}:{{ verse }}</strong> - {{ text }} ({{ translation }})
+        </span>
 
         <!-- ✅ Save button aligned right -->
         <form method="POST" action="{{ url_for('save_verse', verse_id=id, translation=translation) }}" class="save-form">
@@ -50,12 +59,51 @@
 </p>
 
 <script>
+  // ✅ Search filter
   document.getElementById('verseSearch').addEventListener('keyup', function() {
     var filter = this.value.toLowerCase().trim();
     var verses = document.querySelectorAll('#versesList li');
     verses.forEach(function(verse) {
       var text = verse.innerText.toLowerCase();
       verse.style.display = text.includes(filter) ? '' : 'none';
+    });
+  });
+
+  // ✅ Highlight / Underline / Erase logic tied to credits
+  let currentAction = null;
+
+  document.getElementById("highlightBtn").addEventListener("click", () => currentAction = "highlight");
+  document.getElementById("underlineBtn").addEventListener("click", () => currentAction = "underline");
+  document.getElementById("eraseBtn").addEventListener("click", () => currentAction = "erase");
+
+  document.querySelectorAll(".verse").forEach(verse => {
+    verse.addEventListener("click", () => {
+      const verseId = verse.dataset.id;
+
+      if (currentAction === "highlight" || currentAction === "underline") {
+        fetch("{{ url_for('mark_verse') }}", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ verse_id: verseId, action: currentAction })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            if (currentAction === "highlight") verse.classList.add("highlighted");
+            if (currentAction === "underline") verse.classList.add("underlined");
+            document.getElementById("creditsDisplay").textContent = data.new_balance;
+          } else {
+            alert("Not enough credits!");
+          }
+        });
+      } else if (currentAction === "erase") {
+        verse.classList.remove("highlighted", "underlined");
+        fetch("{{ url_for('erase_mark') }}", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ verse_id: verseId })
+        });
+      }
     });
   });
 </script>
