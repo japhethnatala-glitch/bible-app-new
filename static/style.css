@@ -218,3 +218,12 @@ footer {
 body.dark-mode footer {
     color: #ccc;
 }
+
+/* ✅ Highlight / Underline styles */
+.highlighted {
+    background-color: yellow;
+}
+
+.underlined {
+    text-decoration: underline;
+}
