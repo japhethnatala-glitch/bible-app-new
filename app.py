@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from flask import Flask, render_template, request, flash, redirect, url_for, session, g
+from flask import Flask, render_template, request, flash, redirect, url_for, session, g, jsonify
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
@@ -41,6 +41,18 @@ def init_db():
         user_id INTEGER,
         verse_id INTEGER,
         translation TEXT,
+        FOREIGN KEY(user_id) REFERENCES users(id),
+        FOREIGN KEY(verse_id) REFERENCES verses(id)
+    )
+    """)
+
+    # Highlights table (for highlight / underline marks)
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS highlights (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        verse_id INTEGER,
+        action TEXT,
         FOREIGN KEY(user_id) REFERENCES users(id),
         FOREIGN KEY(verse_id) REFERENCES verses(id)
     )
@@ -297,6 +309,83 @@ def terms():
 @app.route("/help")
 def help():
     return render_template("help.html")
+
+# ---------------------------
+# Highlight / Mark routes (new)
+# ---------------------------
+@app.route("/mark_verse", methods=["POST"])
+def mark_verse():
+    # Require login
+    if "user_id" not in session:
+        return jsonify(success=False, message="Authentication required"), 403
+
+    data = request.get_json() or {}
+    verse_id = data.get("verse_id")
+    action = data.get("action")
+    user_id = session["user_id"]
+
+    if not verse_id or not action:
+        return jsonify(success=False, message="Missing parameters"), 400
+
+    conn = sqlite3.connect("app.db", timeout=5)
+    cur = conn.cursor()
+
+    # Check credits
+    cur.execute("SELECT credits FROM users WHERE id = ?", (user_id,))
+    row = cur.fetchone()
+    if not row or row[0] <= 0:
+        conn.close()
+        return jsonify(success=False, message="Not enough credits")
+
+    try:
+        # Deduct 1 credit
+        cur.execute("UPDATE users SET credits = credits - 1 WHERE id = ?", (user_id,))
+
+        # Optionally avoid duplicate marks: remove existing mark for same verse/action
+        cur.execute("DELETE FROM highlights WHERE user_id = ? AND verse_id = ? AND action = ?", (user_id, verse_id, action))
+
+        # Save highlight/underline
+        cur.execute("INSERT INTO highlights (user_id, verse_id, action) VALUES (?, ?, ?)",
+                    (user_id, verse_id, action))
+        conn.commit()
+
+        # Get new balance
+        cur.execute("SELECT credits FROM users WHERE id = ?", (user_id,))
+        new_balance = cur.fetchone()[0]
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        return jsonify(success=False, message=str(e)), 500
+    finally:
+        conn.close()
+
+    return jsonify(success=True, new_balance=new_balance)
+
+@app.route("/erase_mark", methods=["POST"])
+def erase_mark():
+    if "user_id" not in session:
+        return jsonify(success=False, message="Authentication required"), 403
+
+    data = request.get_json() or {}
+    verse_id = data.get("verse_id")
+    user_id = session["user_id"]
+
+    if not verse_id:
+        return jsonify(success=False, message="Missing verse_id"), 400
+
+    conn = sqlite3.connect("app.db", timeout=5)
+    cur = conn.cursor()
+    try:
+        cur.execute("DELETE FROM highlights WHERE user_id = ? AND verse_id = ?", (user_id, verse_id))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        return jsonify(success=False, message=str(e)), 500
+    finally:
+        conn.close()
+
+    return jsonify(success=True)
 
 # ---------------------------
 # Debugging helpers
