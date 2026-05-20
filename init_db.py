@@ -1,9 +1,11 @@
-import sqlite3, json
+import sqlite3
+import json
 
 def setup_db():
     conn = sqlite3.connect("app.db")
     cur = conn.cursor()
 
+    # Users table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -13,6 +15,7 @@ def setup_db():
     )
     """)
 
+    # Verses table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS verses (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,6 +24,30 @@ def setup_db():
         verse INTEGER,
         text TEXT,
         translation TEXT
+    )
+    """)
+
+    # Highlights table (new)
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS highlights (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        verse_id INTEGER,
+        action TEXT,
+        FOREIGN KEY(user_id) REFERENCES users(id),
+        FOREIGN KEY(verse_id) REFERENCES verses(id)
+    )
+    """)
+
+    # Saved verses table (optional, if you want to preload favorites)
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS saved_verses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        verse_id INTEGER,
+        translation TEXT,
+        FOREIGN KEY(user_id) REFERENCES users(id),
+        FOREIGN KEY(verse_id) REFERENCES verses(id)
     )
     """)
 
