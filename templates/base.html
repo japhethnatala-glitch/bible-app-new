@@ -22,6 +22,18 @@
   <style>
     .dark-mode { background-color: #121212 !important; color: #f5f5f5 !important; }
     #clock { font-weight: bold; font-size: 14px; }
+    #installBtn {
+      display:none;
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      padding:10px 14px;
+      border-radius:8px;
+      background:#ff4500;
+      color:#fff;
+      border:none;
+      z-index:1000;
+    }
   </style>
 </head>
 <body class="container mt-4">
@@ -80,6 +92,9 @@
     </p>
   </footer>
 
+  <!-- ✅ Install button -->
+  <button id="installBtn">Install Bible App</button>
+
   <!-- ✅ Dark mode + background color persistence -->
   <script>
     const toggle = document.getElementById('darkModeToggle');
@@ -126,6 +141,38 @@
     }
     setInterval(updateClock, 1000);
     updateClock();
+  </script>
+
+  <!-- ✅ Service worker + install logic -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/sw.js')
+        .then(reg => console.log('SW registered', reg))
+        .catch(err => console.warn('SW registration failed', err));
+    }
+
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log('User choice:', outcome);
+      installBtn.style.display = 'none';
+      deferredPrompt = null;
+    });
+
+    window.addEventListener('appinstalled', () => {
+      installBtn.style.display = 'none';
+      console.log('App installed');
+    });
   </script>
 
 </body>
