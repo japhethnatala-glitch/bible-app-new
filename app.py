@@ -263,25 +263,57 @@ def credits():
     return render_template("credits.html")
 
 # ---------------------------
-# Payment callback
+# Payment callback (updated to handle coin-specific minima)
 # ---------------------------
 @app.route("/payment_callback", methods=["POST"])
 def payment_callback():
-    data = request.json
+    data = request.json or {}
     email = data.get("order_description")
-    amount = float(data.get("price_amount", 0))
+    # price_amount may be a string or number; coerce safely
+    try:
+        amount = float(data.get("price_amount", 0))
+    except (TypeError, ValueError):
+        amount = 0.0
+
+    # price_currency is expected from the payment provider (e.g., "BTC", "USDT", "ETH")
+    currency = (data.get("price_currency") or "").upper()
+
     credits_to_add = 0
-    if amount == 5:
-        credits_to_add = 50
-    elif amount == 10:
-        credits_to_add = 120
+
+    # --- Stablecoins (USDT/USDC) can handle small packages ---
+    if currency in ["USDT", "USDC"]:
+        if amount == 5:
+            credits_to_add = 50
+        elif amount == 10:
+            credits_to_add = 120
+        elif amount == 20:
+            credits_to_add = 250
+
+    # --- BTC/ETH require larger minimums; only accept larger packages to avoid gateway minima errors ---
+    elif currency in ["BTC", "ETH"]:
+        # Accept $10 and up for BTC/ETH to avoid tiny crypto amounts
+        if 10 <= amount < 20:
+            credits_to_add = 120
+        elif amount >= 20:
+            credits_to_add = 250
+
+    # --- Other coins (XRP, LTC, etc.) fallback to standard packages ---
+    else:
+        if amount == 5:
+            credits_to_add = 50
+        elif amount == 10:
+            credits_to_add = 120
+        elif amount == 20:
+            credits_to_add = 250
+
     if credits_to_add > 0 and email:
         conn = sqlite3.connect("app.db", timeout=5)
         cur = conn.cursor()
         cur.execute("UPDATE users SET credits = credits + ? WHERE email = ?", (credits_to_add, email))
         conn.commit()
         conn.close()
-    return {"status": "success"}, 200
+
+    return jsonify(status="success", credits_added=credits_to_add), 200
 
 # ---------------------------
 # Static pages
