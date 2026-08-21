@@ -1,1 +1,15 @@
+# Ignore local databases
+*.db
+*.sqlite
+
+# Ignore logs and caches
+*.log
+__pycache__/
+*.pyc
+
+# Ignore node modules (if any)
+node_modules/
+
+# Ignore large verse datasets if stored locally
+datasets/
 
